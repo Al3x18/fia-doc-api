@@ -37,7 +37,7 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
                 return True
     return False
 
-def get_docs(*, page) -> list:
+def get_docs(*, page) -> list[dict]:
     """
     Get all documents from the FIA documents page.
 
@@ -48,11 +48,20 @@ def get_docs(*, page) -> list:
         list: List of document objects
     """
 
-    gp_name = page.query_selector(".event-title")
-    documents = []
+    documents: list[dict] = []
 
-    # Initialize GP_NAME with name if gp_name is not None, otherwise with an empty string
-    documents.append({'gp_name': gp_name.inner_text() if gp_name else "unknown"})
+    #Get Gp Name from event-title CSS selector
+    gp_name = page.query_selector(".event-title")
+
+    #Get Season Year from form-type-select CSS selector
+    season_year = page.query_selector_all(".form-type-select")[0].query_selector("select option").inner_text().split(' ')[1]
+
+    # Add season year to document (if season_year is None add "unknown")
+    # Add gp_name in document with name of gp (if gp_name is None add "unknown")
+    documents.append({
+        'season_year': season_year if season_year else "unknown",
+        'gp_name': gp_name.inner_text() if gp_name else "unknown"
+    })
 
     # Find all document list items within ul.document-row-wrapper
     document_items = page.query_selector_all('ul.document-row-wrapper li')
