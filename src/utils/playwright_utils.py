@@ -31,9 +31,9 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
             current_select_type = first_option.inner_text() if first_option else ""
 
             if current_select_type == select_field_name:
-                logger.info(f"Selecting {option_text} in {select_field_name}")
+                logger.info(f"Selecting {option_text} in {select_field_name}\n")
                 select_element.select_option(label=option_text)
-                page.wait_for_load_state('networkidle')  # Wait for page to be ready
+                page.wait_for_timeout(1500)  # Wait for page to be ready
                 return True
     return False
 
