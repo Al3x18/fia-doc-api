@@ -70,6 +70,7 @@ def get_fia_documents():
 
         # Get documents after all selections are made
         logger.info("GETTING DOCUMENTS...\n")
+        
         documents = get_docs(page=page)
 
         browser.close()
