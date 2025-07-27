@@ -76,7 +76,7 @@ def get_fia_documents():
         browser.close()
 
     return jsonify({
-        'message': 'FIA documents retrieved successfully',
+        'message': 'FIA documents retrieved',
         'count': len(documents),
         'documents': documents
     })
