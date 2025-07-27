@@ -1,371 +1,399 @@
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{{ title }} - API Documentation</title>
-        <link
-            rel="stylesheet"
-            href="{{ url_for('static', filename='css/style.css') }}"
-        />
-    </head>
-    <body>
-        <div class="container">
-            <header>
-                <h1>{{ title }}</h1>
-                <p>{{ description }}</p>
-                <span class="version">v{{ version }}</span>
-            </header>
 
-            <main>
-                <section>
-                    <h2>Base URL</h2>
-                    <code class="base-url">{{ base_url }}</code>
-                </section>
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{{ title }} - API Documentation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+</head>
 
-                <section>
-                    <h2>Overview</h2>
-                    <p>This API provides automated access to official FIA Formula 1 documents by scraping the FIA website. It retrieves race classifications, penalties, technical regulations, and other official race documents.</p>
-                    
-                    <div class="info-box">
-                        <h3>Key Features</h3>
-                        <ul>
-                            <li><strong>Real-time scraping</strong> of the official FIA documents portal</li>
-                            <li><strong>Automatic data formatting</strong> (dates converted to ISO format, URLs made absolute)</li>
-                            <li><strong>Direct document downloads</strong> without server-side storage</li>
-                            <li><strong>Flexible filtering</strong> by season, championship, and event</li>
-                        </ul>
+<body>
+    <div class="container">
+        <header>
+            <h1>{{ title }}</h1>
+            <p>{{ description }}</p>
+            <span class="version">v{{ version }}</span>
+        </header>
+
+        <main>
+            <section>
+                <h2>Base URL</h2>
+                <code class="base-url">{{ base_url }}</code>
+            </section>
+
+            <section>
+                <h2>Overview</h2>
+                <p>This API provides automated access to official FIA Formula 1 documents by scraping the FIA website.
+                    It retrieves race classifications, penalties, technical regulations, and other official race
+                    documents.</p>
+
+                <div class="info-box">
+                    <h3>Key Features</h3>
+                    <ul>
+                        <li><strong>Real-time scraping</strong> of the official FIA documents portal</li>
+                        <li><strong>Automatic data formatting</strong> (dates converted to ISO format, URLs made
+                            absolute)</li>
+                        <li><strong>Direct document downloads</strong> without server-side storage</li>
+                        <li><strong>Flexible filtering</strong> by season, championship, and event</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>Quick Start</h2>
+                <ol>
+                    <li><strong>Get Documents:</strong> Call <code>GET /fia-documents</code> to retrieve available
+                        documents for the current season</li>
+                    <li><strong>Find Your Document:</strong> Browse the returned list and copy the <code>url</code>
+                        field of your desired document</li>
+                    <li><strong>Download:</strong> Use <code>GET /download-fia-doc?url={document_url}</code> to download
+                        the PDF file</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2>API Endpoints</h2>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/</code>
+                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/')">Copy</button>
                     </div>
-                </section>
+                    <p><strong>Purpose:</strong> Returns this interactive documentation page</p>
+                    <p><strong>Response:</strong> HTML page with complete API documentation and testing interface</p>
+                </div>
 
-                <section>
-                    <h2>Quick Start</h2>
-                    <ol>
-                        <li><strong>Get Documents:</strong> Call <code>GET /fia-documents</code> to retrieve available documents for the current season</li>
-                        <li><strong>Find Your Document:</strong> Browse the returned list and copy the <code>url</code> field of your desired document</li>
-                        <li><strong>Download:</strong> Use <code>GET /download-fia-doc?url={document_url}</code> to download the PDF file</li>
-                    </ol>
-                </section>
-
-                <section>
-                    <h2>API Endpoints</h2>
-
-                    <div class="endpoint">
-                        <div class="endpoint-header">
-                            <span class="method">GET</span>
-                            <code class="path">/</code>
-                            <button class="btn" onclick="copyToClipboard('{{ base_url }}/')">Copy</button>
-                        </div>
-                        <p><strong>Purpose:</strong> Returns this interactive documentation page</p>
-                        <p><strong>Response:</strong> HTML page with complete API documentation and testing interface</p>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/fia-documents</code>
+                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/fia-documents')">Copy</button>
+                        <button class="btn primary" onclick="openUrl('{{ base_url }}/fia-documents')">Try</button>
                     </div>
 
-                    <div class="endpoint">
-                        <div class="endpoint-header">
-                            <span class="method">GET</span>
-                            <code class="path">/fia-documents</code>
-                            <button class="btn" onclick="copyToClipboard('{{ base_url }}/fia-documents')">Copy</button>
-                            <button class="btn primary" onclick="openUrl('{{ base_url }}/fia-documents')">Try</button>
-                        </div>
-                        
-                        <h3>What This Endpoint Does</h3>
-                        <p>This endpoint performs real-time web scraping of the official FIA documents portal at <code>fia.com/documents</code>. It:</p>
-                        <ul>
-                            <li>Opens the FIA documents page using a headless browser (Playwright)</li>
-                            <li>Automatically selects filters for season, championship, and event</li>
-                            <li>Extracts all available document metadata from the results page</li>
-                            <li>Converts dates from FIA format to ISO 8601 standard</li>
-                            <li>Converts relative URLs to absolute download links</li>
-                            <li>Returns structured JSON data ready for consumption</li>
-                        </ul>
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint performs real-time web scraping of the official FIA documents portal at
+                        <code>fia.com/documents</code>. It:</p>
+                    <ul>
+                        <li>Opens the FIA documents page using a headless browser (Playwright)</li>
+                        <li>Automatically selects filters for season, championship, and event</li>
+                        <li>Extracts all available document metadata from the results page</li>
+                        <li>Converts dates from FIA format to ISO 8601 standard</li>
+                        <li>Converts relative URLs to absolute download links</li>
+                        <li>Returns structured JSON data ready for consumption</li>
+                    </ul>
 
-                        <h3>Query Parameters (Optional)</h3>
-                        <table>
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Default Value</th>
-                                <th>Description</th>
-                                <th>Example</th>
-                            </tr>
-                            <tr>
-                                <td><code>season</code></td>
-                                <td>SEASON 2025</td>
-                                <td>F1 season year to filter by</td>
-                                <td><code>?season=SEASON 2024</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>championship</code></td>
-                                <td>FIA Formula One World Championship</td>
-                                <td>Championship type (usually keep default)</td>
-                                <td><code>?championship=FIA Formula One World Championship</code></td>
-                            </tr>
-                            <tr>
-                                <td><code>event</code></td>
-                                <td>(empty)</td>
-                                <td>Specific Grand Prix name. If empty, returns latest event documents</td>
-                                <td><code>?event=Belgian Grand Prix</code></td>
-                            </tr>
-                        </table>
+                    <h3>Query Parameters (Optional)</h3>
+                    <table>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Default Value</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                        </tr>
+                        <tr>
+                            <td><code>season</code></td>
+                            <td>SEASON 2025</td>
+                            <td>F1 season year to filter by</td>
+                            <td><code>?season=SEASON 2024</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>championship</code></td>
+                            <td>FIA Formula One World Championship</td>
+                            <td>Championship type (usually keep default)</td>
+                            <td><code>?championship=FIA Formula One World Championship</code></td>
+                        </tr>
+                        <tr>
+                            <td><code>event</code></td>
+                            <td>(empty)</td>
+                            <td>Specific Grand Prix name. If empty, returns latest event documents</td>
+                            <td><code>?event=Belgian Grand Prix</code></td>
+                        </tr>
+                    </table>
 
-                        <h3>Example Usage</h3>
-                        <div class="example-box">
-                            <p><strong>Get latest documents:</strong></p>
-                            <code>GET {{ base_url }}/fia-documents</code>
-                            
-                            <p><strong>Get documents for specific event:</strong></p>
-                            <code>GET {{ base_url }}/fia-documents?event=Monaco Grand Prix</code>
-                            
-                            <p><strong>Get documents from previous season:</strong></p>
-                            <code>GET {{ base_url }}/fia-documents?season=SEASON 2024</code>
-                        </div>
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Get latest documents:</strong></p>
+                        <code>GET {{ base_url }}/fia-documents</code>
 
-                        <h3>Response Structure</h3>
-                        <pre><code>{
-  "message": "FIA documents retrieved successfully",
-  "count": 73,
+                        <p><strong>Get documents for specific event:</strong></p>
+                        <code>GET {{ base_url }}/fia-documents?event=Monaco Grand Prix</code>
+
+                        <p><strong>Get documents from previous season:</strong></p>
+                        <code>GET {{ base_url }}/fia-documents?season=SEASON 2024</code>
+                    </div>
+
+                    <h3>Response Structure</h3>
+                    <pre><code>{
+  "message": "FIA documents retrieved",
   "documents": [
     {
-      "gp_name": "AUSTRIAN GRAND PRIX",
-      "season_year": "2024"
-    },
-    {
-      "date": "2024-06-30T19:15:00",
-      "published": "Published on 30.06.24 19:15 CET",
-      "title": "Doc 75 - Championship Points",
-      "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Championship Points.pdf"
-    },
-    {
-      "date": "2024-06-30T19:13:00", 
-      "published": "Published on 30.06.24 19:13 CET",
-      "title": "Doc 74 - Final Race Classification",
-      "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Final Race Classification.pdf"
+      "info": {
+        "season_year": "2025",
+        "gp_name": "Austrian Grand Prix",
+        "docs_count": 2
+      },
+      "docs": [
+        {
+          "title": "Doc 75 - Championship Points",
+          "published": "Published on 30.06.24 19:15 CET",
+          "date": "2024-06-30T19:15:00",
+          "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Championship Points.pdf"
+        },
+        {
+          "title": "Doc 74 - Final Race Classification",
+          "published": "Published on 30.06.24 19:13 CET",
+          "date": "2024-06-30T19:13:00",
+          "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Final Race Classification.pdf"
+        }
+      ]
     }
   ]
 }</code></pre>
 
-                        <h3>Response Fields Explained</h3>
-                        <table>
-                            <tr>
-                                <th>Field</th>
-                                <th>Type</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><code>message</code></td>
-                                <td>string</td>
-                                <td>Status message indicating successful retrieval</td>
-                            </tr>
-                            <tr>
-                                <td><code>count</code></td>
-                                <td>number</td>
-                                <td>Total number of elements in documents array (including metadata)</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"><strong>First Element (Metadata)</strong></td>
-                            </tr>
-                            <tr>
-                                <td><code>documents[0].gp_name</code></td>
-                                <td>string</td>
-                                <td>Grand Prix event name in uppercase (e.g., "AUSTRIAN GRAND PRIX")</td>
-                            </tr>
-                            <tr>
-                                <td><code>documents[0].season_year</code></td>
-                                <td>string</td>
-                                <td>Season year extracted from the page (e.g., "2024")</td>
-                            </tr>
-                            <tr>
-                                <td colspan="3"><strong>Document Elements (documents[1] onwards)</strong></td>
-                            </tr>
-                            <tr>
-                                <td><code>title</code></td>
-                                <td>string</td>
-                                <td>Official document title as published by FIA</td>
-                            </tr>
-                            <tr>
-                                <td><code>published</code></td>
-                                <td>string</td>
-                                <td>Original FIA publication date format with timezone</td>
-                            </tr>
-                            <tr>
-                                <td><code>date</code></td>
-                                <td>string</td>
-                                <td>ISO 8601 formatted date for easier programmatic use</td>
-                            </tr>
-                            <tr>
-                                <td><code>url</code></td>
-                                <td>string</td>
-                                <td>Direct download URL for the PDF document</td>
-                            </tr>
-                        </table>
-
-                        <div class="note-box">
-                            <h4>Response Structure Notes</h4>
-                            <ul>
-                                <li><strong>First Element:</strong> Contains metadata (GP name and season year) - not a document</li>
-                                <li><strong>Subsequent Elements:</strong> Actual documents with download URLs</li>
-                                <li><strong>Count Field:</strong> Includes the metadata element, so actual documents = count - 1</li>
-                                <li><strong>Document Order:</strong> Usually sorted by publication time (newest first)</li>
-                            </ul>
-                        </div>
-
-                        <div class="note-box">
-                            <h4>Processing Time</h4>
-                            <p>This endpoint typically takes 3-8 seconds to respond as it performs real-time web scraping using a headless browser. The API waits for page loads and form submissions to complete.</p>
-                        </div>
-                    </div>
-
-                    <div class="endpoint">
-                        <div class="endpoint-header">
-                            <span class="method">GET</span>
-                            <code class="path">/download-fia-doc</code>
-                            <button class="btn" onclick="copyToClipboard('{{ base_url }}/download-fia-doc?url=')">Copy</button>
-                        </div>
-                        
-                        <h3>What This Endpoint Does</h3>
-                        <p>This endpoint acts as a proxy server for downloading FIA documents. It:</p>
-                        <ul>
-                            <li>Fetches the document from the provided FIA URL</li>
-                            <li>Streams the file content directly to your browser/client</li>
-                            <li>Sets appropriate headers for PDF file downloads</li>
-                            <li>Extracts filename from the URL for proper file naming</li>
-                            <li>Does not store files on the server (streaming download)</li>
-                        </ul>
-                        
-                        <h3>Required Parameters</h3>
-                        <table>
-                            <tr>
-                                <th>Parameter</th>
-                                <th>Type</th>
-                                <th>Required</th>
-                                <th>Description</th>
-                            </tr>
-                            <tr>
-                                <td><code>url</code></td>
-                                <td>string</td>
-                                <td>✅ Yes</td>
-                                <td>Complete FIA document URL obtained from <code>/fia-documents</code> endpoint</td>
-                            </tr>
-                        </table>
-
-                        <h3>Example Usage</h3>
-                        <div class="example-box">
-                            <p><strong>Download a specific document:</strong></p>
-                            <code>GET {{ base_url }}/download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf</code>
-                        </div>
-
-                        <h3>Response</h3>
-                        <p><strong>Success (200):</strong> Direct PDF file download with these headers:</p>
-                        <ul>
-                            <li><code>Content-Type: application/pdf</code></li>
-                            <li><code>Content-Disposition: attachment; filename="document_name.pdf"</code></li>
-                        </ul>
-                        
-                        <div class="note-box">
-                            <h4>Usage Note</h4>
-                            <p>Always use URLs obtained from the <code>/fia-documents</code> endpoint. External URLs may not work and could cause errors.</p>
-                        </div>
-                    </div>
-                </section>
-
-                <section>
-                    <h2>Document Types You Can Retrieve</h2>
-                    <div class="info-box">
-                        <p>The API can retrieve various types of official FIA documents:</p>
-                        <ul>
-                            <li><strong>Race Results:</strong> Final classifications, fastest laps, lap charts</li>
-                            <li><strong>Qualifying Results:</strong> Qualifying classifications and session reports</li>
-                            <li><strong>Practice Results:</strong> Free practice session timings and reports</li>
-                            <li><strong>Stewards' Decisions:</strong> Penalties, investigations, and official rulings</li>
-                            <li><strong>Technical Documents:</strong> Scrutineering reports, technical regulations updates</li>
-                            <li><strong>Administrative:</strong> Entry lists, schedule changes, official notices</li>
-                        </ul>
-                    </div>
-                </section>
-
-                <section>
-                    <h2>Error Handling</h2>
+                    <h3>Response Fields Explained</h3>
                     <table>
                         <tr>
-                            <th>HTTP Code</th>
-                            <th>Error</th>
+                            <th>Field</th>
+                            <th>Type</th>
                             <th>Description</th>
-                            <th>Solution</th>
                         </tr>
                         <tr>
-                            <td>400</td>
-                            <td>Bad Request</td>
-                            <td>Missing required <code>url</code> parameter for download endpoint</td>
-                            <td>Provide a valid URL parameter</td>
+                            <td><code>message</code></td>
+                            <td>string</td>
+                            <td>Status message indicating successful retrieval</td>
                         </tr>
                         <tr>
-                            <td>500</td>
-                            <td>Internal Server Error</td>
-                            <td>Web scraping failed, network issues, or FIA site unavailable</td>
-                            <td>Retry after a few minutes. Check if FIA website is accessible</td>
+                            <td><code>documents</code></td>
+                            <td>array</td>
+                            <td>Array containing a single object with event information and documents</td>
                         </tr>
                         <tr>
-                            <td>500</td>
-                            <td>Download Failed</td>
-                            <td>Unable to fetch document from provided URL</td>
-                            <td>Verify the URL is valid and the document still exists</td>
+                            <td colspan="3"><strong>Info Object (documents[0].info)</strong></td>
+                        </tr>
+                        <tr>
+                            <td><code>info.season_year</code></td>
+                            <td>string</td>
+                            <td>Season year extracted from the page (e.g., "2025")</td>
+                        </tr>
+                        <tr>
+                            <td><code>info.gp_name</code></td>
+                            <td>string</td>
+                            <td>Grand Prix event name (e.g., "Austrian Grand Prix")</td>
+                        </tr>
+                        <tr>
+                            <td><code>info.docs_count</code></td>
+                            <td>number</td>
+                            <td>Total number of documents found for this event</td>
+                        </tr>
+                        <tr>
+                            <td colspan="3"><strong>Documents Array (documents[0].docs)</strong></td>
+                        </tr>
+                        <tr>
+                            <td><code>docs[].title</code></td>
+                            <td>string</td>
+                            <td>Official document title as published by FIA</td>
+                        </tr>
+                        <tr>
+                            <td><code>docs[].published</code></td>
+                            <td>string</td>
+                            <td>Original FIA publication date format with timezone</td>
+                        </tr>
+                        <tr>
+                            <td><code>docs[].date</code></td>
+                            <td>string</td>
+                            <td>ISO 8601 formatted date for easier programmatic use</td>
+                        </tr>
+                        <tr>
+                            <td><code>docs[].url</code></td>
+                            <td>string</td>
+                            <td>Direct download URL for the PDF document</td>
                         </tr>
                     </table>
-                </section>
 
-                <section>
-                    <h2>Technical Notes</h2>
                     <div class="note-box">
-                        <h3>Rate Limiting & Performance</h3>
+                        <h4>Response Structure Notes</h4>
                         <ul>
-                            <li>No built-in rate limiting, but be respectful of the FIA website</li>
-                            <li>Web scraping requests take 3-8 seconds due to browser automation</li>
-                            <li>Downloads are immediate once the document URL is known</li>
-                            <li>Consider caching results if making frequent requests</li>
-                        </ul>
-
-                        <h3>Data Processing</h3>
-                        <ul>
-                            <li><strong>Date Conversion:</strong> FIA format "27.07.25 19:58 CET" → ISO "2025-07-27T19:58:00"</li>
-                            <li><strong>URL Processing:</strong> Relative paths are converted to absolute URLs</li>
-                            <li><strong>Browser Automation:</strong> Uses Playwright with Chromium for reliable scraping</li>
-                            <li><strong>No Data Storage:</strong> All operations are performed in real-time</li>
-                        </ul>
-
-                        <h3>Dependencies</h3>
-                        <ul>
-                            <li>Requires stable internet connection to FIA website</li>
-                            <li>Dependent on FIA website structure (may break if they change their HTML)</li>
-                            <li>Uses headless Chromium browser for JavaScript-heavy FIA site</li>
+                            <li><strong>Structured Organization:</strong> Information is clearly separated between event
+                                metadata (<code>info</code>) and documents (<code>docs</code>)</li>
+                            <li><strong>Single Event Focus:</strong> Each response contains documents for one specific
+                                event/Grand Prix</li>
+                            <li><strong>Document Count:</strong> The <code>docs_count</code> field shows the total
+                                number of documents without manual counting</li>
+                            <li><strong>Document Order:</strong> Documents in the <code>docs</code> array are usually
+                                sorted by publication time (newest first)</li>
+                            <li><strong>Field Ordering:</strong> JSON fields are ordered consistently with
+                                <code>info</code> appearing before <code>docs</code></li>
                         </ul>
                     </div>
-                </section>
-            </main>
 
-            <footer>
-                <p>{{ title }} - Built with Flask and Playwright</p>
-            </footer>
-        </div>
+                    <div class="note-box">
+                        <h4>Processing Time</h4>
+                        <p>This endpoint typically takes 3-8 seconds to respond as it performs real-time web scraping
+                            using a headless browser. The API waits for page loads and form submissions to complete.</p>
+                    </div>
+                </div>
 
-        <div id="toast" class="toast">Copied to clipboard!</div>
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/download-fia-doc</code>
+                        <button class="btn"
+                            onclick="copyToClipboard('{{ base_url }}/download-fia-doc?url=')">Copy</button>
+                    </div>
 
-        <script>
-            function copyToClipboard(text) {
-                navigator.clipboard.writeText(text).then(() => {
-                    showToast();
-                }).catch(err => {
-                    console.error('Copy failed:', err);
-                });
-            }
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint acts as a proxy server for downloading FIA documents. It:</p>
+                    <ul>
+                        <li>Fetches the document from the provided FIA URL</li>
+                        <li>Streams the file content directly to your browser/client</li>
+                        <li>Sets appropriate headers for PDF file downloads</li>
+                        <li>Extracts filename from the URL for proper file naming</li>
+                        <li>Does not store files on the server (streaming download)</li>
+                    </ul>
 
-            function showToast() {
-                const toast = document.getElementById('toast');
-                toast.classList.add('show');
-                setTimeout(() => toast.classList.remove('show'), 2000);
-            }
+                    <h3>Required Parameters</h3>
+                    <table>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td><code>url</code></td>
+                            <td>string</td>
+                            <td>✅ Yes</td>
+                            <td>Complete FIA document URL obtained from <code>/fia-documents</code> endpoint</td>
+                        </tr>
+                    </table>
 
-            function openUrl(url) {
-                window.open(url, '_blank');
-            }
-        </script>
-    </body>
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Download a specific document:</strong></p>
+                        <code>GET {{ base_url }}/download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf</code>
+                    </div>
+
+                    <h3>Response</h3>
+                    <p><strong>Success (200):</strong> Direct PDF file download with these headers:</p>
+                    <ul>
+                        <li><code>Content-Type: application/pdf</code></li>
+                        <li><code>Content-Disposition: attachment; filename="document_name.pdf"</code></li>
+                    </ul>
+
+                    <div class="note-box">
+                        <h4>Usage Note</h4>
+                        <p>Always use URLs obtained from the <code>/fia-documents</code> endpoint. External URLs may not
+                            work and could cause errors.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h2>Document Types You Can Retrieve</h2>
+                <div class="info-box">
+                    <p>The API can retrieve various types of official FIA documents:</p>
+                    <ul>
+                        <li><strong>Race Results:</strong> Final classifications, fastest laps, lap charts</li>
+                        <li><strong>Qualifying Results:</strong> Qualifying classifications and session reports</li>
+                        <li><strong>Practice Results:</strong> Free practice session timings and reports</li>
+                        <li><strong>Stewards' Decisions:</strong> Penalties, investigations, and official rulings</li>
+                        <li><strong>Technical Documents:</strong> Scrutineering reports, technical regulations updates
+                        </li>
+                        <li><strong>Administrative:</strong> Entry lists, schedule changes, official notices</li>
+                    </ul>
+                </div>
+            </section>
+
+            <section>
+                <h2>Error Handling</h2>
+                <table>
+                    <tr>
+                        <th>HTTP Code</th>
+                        <th>Error</th>
+                        <th>Description</th>
+                        <th>Solution</th>
+                    </tr>
+                    <tr>
+                        <td>400</td>
+                        <td>Bad Request</td>
+                        <td>Missing required <code>url</code> parameter for download endpoint</td>
+                        <td>Provide a valid URL parameter</td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>Internal Server Error</td>
+                        <td>Web scraping failed, network issues, or FIA site unavailable</td>
+                        <td>Retry after a few minutes. Check if FIA website is accessible</td>
+                    </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>Download Failed</td>
+                        <td>Unable to fetch document from provided URL</td>
+                        <td>Verify the URL is valid and the document still exists</td>
+                    </tr>
+                </table>
+            </section>
+
+            <section>
+                <h2>Technical Notes</h2>
+                <div class="note-box">
+                    <h3>Rate Limiting & Performance</h3>
+                    <ul>
+                        <li>No built-in rate limiting, but be respectful of the FIA website</li>
+                        <li>Web scraping requests take 3-8 seconds due to browser automation</li>
+                        <li>Downloads are immediate once the document URL is known</li>
+                        <li>Consider caching results if making frequent requests</li>
+                    </ul>
+
+                    <h3>Data Processing</h3>
+                    <ul>
+                        <li><strong>Date Conversion:</strong> FIA format "27.07.25 19:58 CET" → ISO
+                            "2025-07-27T19:58:00"</li>
+                        <li><strong>URL Processing:</strong> Relative paths are converted to absolute URLs</li>
+                        <li><strong>Browser Automation:</strong> Uses Playwright with Chromium for reliable scraping
+                        </li>
+                        <li><strong>No Data Storage:</strong> All operations are performed in real-time</li>
+                    </ul>
+
+                    <h3>Dependencies</h3>
+                    <ul>
+                        <li>Requires stable internet connection to FIA website</li>
+                        <li>Dependent on FIA website structure (may break if they change their HTML)</li>
+                        <li>Uses headless Chromium browser for JavaScript-heavy FIA site</li>
+                    </ul>
+                </div>
+            </section>
+        </main>
+
+        <footer>
+            <p>{{ title }} - Built with Flask and Playwright</p>
+        </footer>
+    </div>
+
+    <div id="toast" class="toast">Copied to clipboard!</div>
+
+    <script>
+        function copyToClipboard(text) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast();
+            }).catch(err => {
+                console.error('Copy failed:', err);
+            });
+        }
+
+        function showToast() {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        }
+
+        function openUrl(url) {
+            window.open(url, '_blank');
+        }
+    </script>
+</body>
+
 </html>
