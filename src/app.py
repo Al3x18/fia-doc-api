@@ -20,7 +20,7 @@ def api_documentation():
                          title="FIA Documents API",
                          version="1.0.0",
                          description="API for retrieving and downloading FIA Formula 1 documents",
-                         base_url="https://fia-doc-api-production.up.railway.app/")
+                         base_url="https://fia-doc-api-production.up.railway.app")
 
 @app.route('/fia-documents', methods=['GET'])
 def get_fia_documents():
