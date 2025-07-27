@@ -34,7 +34,7 @@ def get_fia_documents():
     CHAMPIONSHIP_FALLBACK_VALUE = "FIA Formula One World Championship"
     EVENT_FALLBACK_VALUE = ""  # Leave empty to skip event selection
 
-    # Get optional parameters with default values from lines 13-15
+    # Get optional parameters with default values defined above
     season = request.args.get('season', SEASON_FALLBACK_VALUE)
     championship = request.args.get('championship', CHAMPIONSHIP_FALLBACK_VALUE)
     event = request.args.get('event', EVENT_FALLBACK_VALUE)
