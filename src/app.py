@@ -30,9 +30,14 @@ def get_fia_documents():
     SELECT_FIELD_CHAMPIONSHIP_DEFAULT_VALUE = "Championship"
     SELECT_FIELD_EVENT_DEFAULT_VALUE = "Event"
 
-    selected_season = "SEASON 2025"
-    selected_championship = "FIA Formula One World Championship"
-    selected_event = ""  # Leave empty to skip event selection
+    SEASON_FALLBACK_VALUE = "SEASON 2025"
+    CHAMPIONSHIP_FALLBACK_VALUE = "FIA Formula One World Championship"
+    EVENT_FALLBACK_VALUE = ""  # Leave empty to skip event selection
+
+    # Get optional parameters with default values from lines 13-15
+    season = request.args.get('season', SEASON_FALLBACK_VALUE)
+    championship = request.args.get('championship', CHAMPIONSHIP_FALLBACK_VALUE)
+    event = request.args.get('event', EVENT_FALLBACK_VALUE)
 
     documents = []
 
@@ -45,22 +50,25 @@ def get_fia_documents():
         page.wait_for_selector('.select-field-wrapper')
 
         # Select options in order
-        logger.info("STARTING SELECTIONS...")
+        logger.info("STARTING SELECTIONS...\n")
+        logger.info("SELECTED VALUES:")
+        logger.info(f"Season: {season}")
+        logger.info(f"Championship: {championship}")
+        logger.info(f"Event: {event}\n")
 
         # The page will be updated every selection, this is managed in the select_option_by_type function
-        if selected_season:
-            select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=selected_season)
+        if season:
+            select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=season)
 
-        if selected_championship:
-            select_option_by_type(page=page, select_field_name=SELECT_FIELD_CHAMPIONSHIP_DEFAULT_VALUE, option_text=selected_championship)
-
-        if selected_event:
-            select_option_by_type(page=page, select_field_name=SELECT_FIELD_EVENT_DEFAULT_VALUE, option_text=selected_event)
+        if championship:
+            select_option_by_type(page=page, select_field_name=SELECT_FIELD_CHAMPIONSHIP_DEFAULT_VALUE, option_text=championship)
+        if event:
+            select_option_by_type(page=page, select_field_name=SELECT_FIELD_EVENT_DEFAULT_VALUE, option_text=event)
         else:
-            logger.info("SKIPPING EVENT SELECTION (selected_event value EMPTY) GETTING DOCS FOR LAST EVENT")
+            logger.info("SKIPPING EVENT SELECTION (event parameter EMPTY) GETTING DOCS FOR LAST EVENT\n")
 
         # Get documents after all selections are made
-        logger.info("GETTING DOCUMENTS...")
+        logger.info("GETTING DOCUMENTS...\n")
         documents = get_docs(page=page)
 
         browser.close()
