@@ -1,6 +1,7 @@
 import logging
 import os
-from flask import Flask, jsonify, render_template
+import json
+from flask import Flask, jsonify, render_template, Response
 from playwright.sync_api import sync_playwright
 from utils.playwright_utils import select_option_by_type, get_docs, download_file
 
@@ -76,11 +77,19 @@ def get_fia_documents():
 
         browser.close()
 
-    return jsonify({
+    response_data = {
         'message': 'FIA documents retrieved',
-        'count': len(documents),
         'documents': documents
-    })
+    }
+    
+    # Use Response + json.dumps instead of jsonify() to preserve field ordering
+    # jsonify() may reorder dictionary keys during serialization, but json.dumps()
+    # respects the insertion order of Python dictionaries (Python 3.7+)
+    # This ensures 'message' appears before 'documents' and 'info' before 'docs'
+    return Response(
+        json.dumps(response_data, ensure_ascii=False, indent=2),
+        mimetype='application/json'
+    )
 
 @app.route('/download-fia-doc', methods=['GET'])
 def download_document():
