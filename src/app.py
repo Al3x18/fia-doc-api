@@ -62,6 +62,7 @@ def get_fia_documents():
 
         if championship:
             select_option_by_type(page=page, select_field_name=SELECT_FIELD_CHAMPIONSHIP_DEFAULT_VALUE, option_text=championship)
+        
         if event:
             select_option_by_type(page=page, select_field_name=SELECT_FIELD_EVENT_DEFAULT_VALUE, option_text=event)
         else:
