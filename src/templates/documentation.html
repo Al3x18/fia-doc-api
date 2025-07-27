@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ title }} - API Documentation</title>
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='css/style.css') }}"
+        />
+    </head>
+    <body>
+        <div class="container">
+            <!-- Header -->
+            <div class="header">
+                <h1>{{ title }}</h1>
+                <p>{{ description }}</p>
+                <div class="version">Version {{ version }}</div>
+            </div>
+
+            <!-- Content -->
+            <div class="content">
+                <!-- Base URL Section -->
+                <div class="section">
+                    <h2>🌐 Base URL</h2>
+                    <div class="base-url">{{ base_url }}</div>
+                </div>
+
+                <!-- Usage Flow Section -->
+                <div class="section">
+                    <h2>🚀 Quick Start</h2>
+                    <div class="usage-flow">
+                        <h3>How to use this API:</h3>
+                        <ol>
+                            <li>
+                                Call <code>GET /fia-documents</code> to retrieve
+                                available documents
+                            </li>
+                            <li>
+                                Extract the <code>url</code> field from your
+                                desired document
+                            </li>
+                            <li>
+                                Call
+                                <code
+                                    >GET
+                                    /download-fia-doc?url={document_url}</code
+                                >
+                                to download the file
+                            </li>
+                        </ol>
+                    </div>
+                </div>
+
+                <!-- Endpoints Section -->
+                <div class="section">
+                    <h2>📚 API Endpoints</h2>
+
+                    <!-- Root Endpoint -->
+                    <div class="endpoint">
+                        <div class="endpoint-title">
+                            <span class="method">GET</span>
+                            <span class="path">
+                                /
+                                <button
+                                    class="copy-btn"
+                                    onclick="copyToClipboard('{{ base_url }}/')"
+                                >
+                                    📋 Copy
+                                </button>
+                            </span>
+                        </div>
+                        <div class="description">
+                            API documentation (this page)
+                        </div>
+                        <p>
+                            <strong>Response:</strong> HTML page with complete
+                            API documentation
+                        </p>
+                    </div>
+
+                    <!-- Documents Endpoint -->
+                    <div
+                        class="endpoint clickable-endpoint"
+                        onclick="openEndpoint('{{ base_url }}/fia-documents')"
+                    >
+                        <div class="endpoint-title">
+                            <span class="method">GET</span>
+                            <span class="path">
+                                /fia-documents
+                                <button
+                                    class="copy-btn"
+                                    onclick="event.stopPropagation(); copyToClipboard('{{ base_url }}/fia-documents')"
+                                >
+                                    📋 Copy
+                                </button>
+                                <button
+                                    class="try-btn"
+                                    onclick="event.stopPropagation(); openEndpoint('{{ base_url }}/fia-documents')"
+                                >
+                                    🚀 Try it
+                                </button>
+                            </span>
+                        </div>
+                        <div class="description">
+                            Retrieve FIA documents based on season,
+                            championship, and event selections
+                        </div>
+
+                        <div class="future-feature">
+                            <h4>🔮 Coming Soon</h4>
+                            <p>
+                                This endpoint will soon support dynamic year and
+                                event selection via query parameters!
+                            </p>
+                        </div>
+
+                        <h3>Current Configuration (Hardcoded)</h3>
+                        <table class="parameter-table">
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Current Value</th>
+                                <th>Future Support</th>
+                            </tr>
+                            <tr>
+                                <td>Season</td>
+                                <td>SEASON 2024</td>
+                                <td>✅ Query parameter support</td>
+                            </tr>
+                            <tr>
+                                <td>Championship</td>
+                                <td>FIA Formula One World Championship</td>
+                                <td>⚡ Fixed value</td>
+                            </tr>
+                            <tr>
+                                <td>Event</td>
+                                <td>Empty (all doc for the last event)</td>
+                                <td>✅ Query parameter support</td>
+                            </tr>
+                        </table>
+
+                        <h3>Response Structure</h3>
+                        <div class="code-block">
+                            { "message": "FIA documents retrieved successfully",
+                            "count": 15, "documents": [ { "gp_name": "Belgian
+                            Grand Prix", "title": "Doc 68 - Final Race
+                            Classification", "date": "2025-07-27T20:19:00",
+                            "url":
+                            "https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf"
+                            } ] }
+                        </div>
+
+                        <h3>Response Fields</h3>
+                        <table class="parameter-table">
+                            <tr>
+                                <th>Field</th>
+                                <th>Type</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>message</td>
+                                <td>string</td>
+                                <td>Success message</td>
+                            </tr>
+                            <tr>
+                                <td>count</td>
+                                <td>number</td>
+                                <td>Number of documents found</td>
+                            </tr>
+                            <tr>
+                                <td>documents[].gp_name</td>
+                                <td>string</td>
+                                <td>Grand Prix name</td>
+                            </tr>
+                            <tr>
+                                <td>documents[].title</td>
+                                <td>string</td>
+                                <td>Document title</td>
+                            </tr>
+                            <tr>
+                                <td>documents[].date</td>
+                                <td>string</td>
+                                <td>Publication date in ISO format</td>
+                            </tr>
+                            <tr>
+                                <td>documents[].url</td>
+                                <td>string</td>
+                                <td>Direct download URL</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- Download Endpoint -->
+                    <div class="endpoint">
+                        <div class="endpoint-title">
+                            <span class="method">GET</span>
+                            <span class="path">
+                                /download-fia-doc
+                                <button
+                                    class="copy-btn"
+                                    onclick="copyToClipboard('{{ base_url }}/download-fia-doc?url=')"
+                                >
+                                    📋 Copy
+                                </button>
+                                <button
+                                    class="try-btn"
+                                    onclick="event.stopPropagation(); testDownload()"
+                                >
+                                    🚀 Try it
+                                </button>
+                            </span>
+                        </div>
+                        <div class="description">
+                            Download a specific document directly
+                        </div>
+
+                        <h3>Parameters</h3>
+                        <table class="parameter-table">
+                            <tr>
+                                <th>Parameter</th>
+                                <th>Type</th>
+                                <th>Required</th>
+                                <th>Description</th>
+                            </tr>
+                            <tr>
+                                <td>url</td>
+                                <td>string</td>
+                                <td><span class="required">Required</span></td>
+                                <td>Full URL of the document to download</td>
+                            </tr>
+                        </table>
+
+                        <h3>Example Usage</h3>
+                        <div class="code-block">
+                            GET
+                            /download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf
+                        </div>
+
+                        <h3>Response</h3>
+                        <p>
+                            <strong>Success:</strong> Direct file download (PDF)
+                        </p>
+                        <p><strong>Headers:</strong></p>
+                        <ul>
+                            <li><code>Content-Type: application/pdf</code></li>
+                            <li>
+                                <code
+                                    >Content-Disposition: attachment;
+                                    filename="document.pdf"</code
+                                >
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Error Responses -->
+                <div class="section">
+                    <h2>⚠️ Error Responses</h2>
+                    <div class="error-codes">
+                        <div class="error-code">
+                            <div class="error-code-number">400 Bad Request</div>
+                            <p>Missing required parameters</p>
+                        </div>
+                        <div class="error-code">
+                            <div class="error-code-number">
+                                500 Internal Server Error
+                            </div>
+                            <p>Processing failed or server error</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Notes -->
+                <div class="section">
+                    <h2>📝 Important Notes</h2>
+                    <div class="notes">
+                        <ul>
+                            <li>
+                                All dates are automatically converted from FIA
+                                format to ISO 8601 format
+                            </li>
+                            <li>
+                                URLs are automatically converted from relative
+                                to absolute paths
+                            </li>
+                            <li>
+                                Downloads are streamed directly without
+                                server-side storage
+                            </li>
+                            <li>
+                                The API uses Playwright for web scraping and may
+                                take a few seconds to respond
+                            </li>
+                            <li>
+                                Parameters are currently hardcoded - future
+                                versions may accept query parameters
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="footer">
+                <p><strong>{{ title }}</strong></p>
+                <p>Built with Flask and Playwright</p>
+                <div class="base-url">{{ base_url }}</div>
+            </div>
+        </div>
+
+        <!-- Toast Notification -->
+        <div id="toast" class="toast">URL copied to clipboard!</div>
+
+        <script>
+            // Copy to clipboard function
+            function copyToClipboard(text) {
+                navigator.clipboard
+                    .writeText(text)
+                    .then(function () {
+                        showToast("URL copied to clipboard!");
+                    })
+                    .catch(function (err) {
+                        console.error("Could not copy text: ", err);
+                        showToast("Failed to copy URL");
+                    });
+            }
+
+            // Show toast notification
+            function showToast(message) {
+                const toast = document.getElementById("toast");
+                toast.textContent = message;
+                toast.classList.add("show");
+
+                setTimeout(function () {
+                    toast.classList.remove("show");
+                }, 3000);
+            }
+
+            // Open endpoint in new tab
+            function openEndpoint(url) {
+                window.open(url, "_blank");
+            }
+
+            // Test download with example URL
+            function testDownload() {
+                const testUrl =
+                    "{{ base_url }}/download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf";
+                window.open(testUrl, "_blank");
+                showToast("Opening test download...");
+            }
+
+            // Add hover effects
+            document.addEventListener("DOMContentLoaded", function () {
+                const clickableEndpoints = document.querySelectorAll(
+                    ".clickable-endpoint",
+                );
+
+                clickableEndpoints.forEach(function (endpoint) {
+                    endpoint.style.cursor = "pointer";
+
+                    endpoint.addEventListener("mouseenter", function () {
+                        this.style.transform = "translateY(-2px)";
+                    });
+
+                    endpoint.addEventListener("mouseleave", function () {
+                        this.style.transform = "translateY(0)";
+                    });
+                });
+            });
+        </script>
+    </body>
+</html>
