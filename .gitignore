@@ -1,39 +1,114 @@
-# Ambiente virtuale
-venv/
-.venv/
-
-# File compilati Python
+# Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
-*.pyo
+*$py.class
+*.so
 
-# File temporanei / backup
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+cover/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env
+ENV/
+env.bak/
+venv.bak/
+
+# Flask instance folder
+instance/
+
+# Flask configuration
+.flaskenv
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.code-workspace
+*.sublime-*
+.ropeproject
+
+# macOS / Windows / Linux system files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary / backup files
 *.log
 *.tmp
 *.swp
 *.bak
 *.orig
-.DS_Store
+*~
 
-# Config personali IDE/editor
-.vscode/
-.idea/
-*.code-workspace
+# Jupyter Notebook checkpoints
+.ipynb_checkpoints
 
-# File sistema/macOS
-Thumbs.db
-.DS_Store
-
-# Output test / debug
-.coverage
-htmlcov/
-.tox/
-.pytest_cache/
-.cache/
-
-# Ambiente Jupyter (se usi notebook)
-.ipynb_checkpoints/
-
-# File creati da Playwright (cache browser, ecc.)
+# Playwright specific files
 playwright-report/
 test-results/
+playwright/.cache/
+
+# Local development files
+*.sqlite3
+*.db
+
+# Documentation builds
+docs/_build/
+
+# Node.js dependencies (if any)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
