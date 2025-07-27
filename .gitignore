@@ -1,0 +1,39 @@
+# Ambiente virtuale
+venv/
+.venv/
+
+# File compilati Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# File temporanei / backup
+*.log
+*.tmp
+*.swp
+*.bak
+*.orig
+.DS_Store
+
+# Config personali IDE/editor
+.vscode/
+.idea/
+*.code-workspace
+
+# File sistema/macOS
+Thumbs.db
+.DS_Store
+
+# Output test / debug
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+.cache/
+
+# Ambiente Jupyter (se usi notebook)
+.ipynb_checkpoints/
+
+# File creati da Playwright (cache browser, ecc.)
+playwright-report/
+test-results/
