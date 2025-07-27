@@ -1,4 +1,5 @@
 import logging
+import os
 from flask import Flask, jsonify, render_template
 from playwright.sync_api import sync_playwright
 from utils.playwright_utils import select_option_by_type, get_docs, download_file
@@ -103,4 +104,5 @@ def download_document():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=4050, debug=False)
+    port = int(os.environ.get("PORT", 4050))  # Use 4050 in local, otherwise the PORT of Railway
+    app.run(host='0.0.0.0', port=port)
