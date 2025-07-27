@@ -50,10 +50,10 @@ def get_docs(*, page) -> list[dict]:
 
     documents: list[dict] = []
 
-    #Get Gp Name from event-title CSS selector
+    # Get GP Name from event-title CSS selector
     gp_name = page.query_selector(".event-title")
 
-    #Get Season Year from form-type-select CSS selector
+    # Get Season Year from form-type-select CSS selector
     season_year = page.query_selector_all(".form-type-select")[0].query_selector("select option").inner_text().split(' ')[1]
 
     # Add season year to document (if season_year is None add "unknown")
