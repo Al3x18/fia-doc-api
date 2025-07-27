@@ -45,23 +45,17 @@ def get_docs(*, page) -> list[dict]:
         page: Playwright page object
 
     Returns:
-        list: List of document objects
+        list: List with single object containing info and docs
     """
 
-    documents: list[dict] = []
-
     # Get GP Name from event-title CSS selector
-    gp_name = page.query_selector(".event-title")
+    gp_name = page.query_selector(".event-title").inner_text()
 
     # Get Season Year from form-type-select CSS selector
     season_year = page.query_selector_all(".form-type-select")[0].query_selector("select option").inner_text().split(' ')[1]
 
-    # Add season year to document (if season_year is None add "unknown")
-    # Add gp_name in document with name of gp (if gp_name is None add "unknown")
-    documents.append({
-        'season_year': season_year if season_year else "unknown",
-        'gp_name': gp_name.inner_text() if gp_name else "unknown"
-    })
+    # Create the docs list for all documents
+    docs_list = []
 
     # Find all document list items within ul.document-row-wrapper
     document_items = page.query_selector_all('ul.document-row-wrapper li')
@@ -90,14 +84,24 @@ def get_docs(*, page) -> list[dict]:
 
         # Only add if we have at least a title
         if title:
-            documents.append({
+            docs_list.append({
                 'title': title,
                 'published': published_raw,
                 'date': date,
                 'url': url
             })
 
-    return documents
+    # Create the final structure with info and docs
+    response = [{
+        'info': {
+            'season_year': season_year if season_year else "unknown",
+            'gp_name': gp_name if gp_name else "unknown",
+            'docs_count': len(docs_list)
+        },
+        'docs': docs_list
+    }]
+
+    return response
 
 
 def download_file(*, url) -> tuple:
