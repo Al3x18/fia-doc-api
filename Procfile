@@ -1,1 +1,1 @@
-web: python src/app.py
+web: playwright install chromium && python src/app.py
