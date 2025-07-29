@@ -6,6 +6,30 @@ from datetime import datetime
 # Configure logging
 logger = logging.getLogger(__name__)
 
+def normalize_season_format(season_input):
+    """
+    Normalize season input to FIA expected format.
+    
+    Args:
+        season_input (str): Season in various formats (e.g., "2015", "SEASON 2015")
+    
+    Returns:
+        str: Season in FIA format "SEASON YYYY"
+    """
+    if not season_input:
+        return season_input
+    
+    # If already in correct format, return as is
+    if season_input.upper().startswith("SEASON "):
+        return season_input
+    
+    # If it's just a year (4 digits), add "SEASON " prefix
+    if season_input.isdigit() and len(season_input) == 4:
+        return f"SEASON {season_input}"
+    
+    # Otherwise return as is (might be a different format we don't know)
+    return season_input
+
 def select_option_by_type(*, page, select_field_name, option_text) -> bool:
     """
     Find and select from a specific select type on the FIA documents page.
@@ -36,6 +60,92 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
                 page.wait_for_timeout(1500)  # Wait for page to be ready
                 return True
     return False
+
+def get_select_options(*, page, select_field_name) -> list[str]:
+    """
+    Get all available options from a specific select field.
+    
+    Args:
+        page: Playwright page object
+        select_field_name (str): Name of the select field to find ("Season", "Championship", "Event")
+    
+    Returns:
+        list[str]: List of available option texts (excluding the default option)
+    """
+    select_wrappers = page.query_selector_all('.select-field-wrapper')
+    
+    for wrapper in select_wrappers:
+        select_element = wrapper.query_selector('select')
+        
+        if select_element:
+            # Get the first option text to identify which select this is
+            first_option = select_element.query_selector('option[value="0"]')
+            current_select_type = first_option.inner_text() if first_option else ""
+            
+            if current_select_type == select_field_name:
+                # Get all options except the first one (default option)
+                options = select_element.query_selector_all('option')
+                available_options = []
+                
+                for option in options:
+                    option_value = option.get_attribute('value')
+                    option_text = option.inner_text().strip()
+                    
+                    # Skip the default option (value="0") and empty options
+                    if option_value != "0" and option_text:
+                        available_options.append(option_text)
+                
+                return available_options
+    
+    return []
+
+def get_available_seasons(*, page) -> list[str]:
+    """
+    Get all available seasons from the FIA documents page.
+    
+    Args:
+        page: Playwright page object
+    
+    Returns:
+        list[str]: List of available seasons
+    """
+    return get_select_options(page=page, select_field_name="Season")
+
+def get_available_championships(*, page, season=None) -> list[str]:
+    """
+    Get all available championships for a specific season.
+    
+    Args:
+        page: Playwright page object
+        season (str, optional): Season to select first. If None, uses default/current selection
+    
+    Returns:
+        list[str]: List of available championships
+    """
+    # Select season first if provided
+    if season:
+        normalized_season = normalize_season_format(season)
+        select_option_by_type(page=page, select_field_name="Season", option_text=normalized_season)
+    
+    return get_select_options(page=page, select_field_name="Championship")
+
+def get_available_events(*, page, season=None) -> list[str]:
+    """
+    Get all available events/Grand Prix for a specific season.
+    
+    Args:
+        page: Playwright page object
+        season (str, optional): Season to select first. If None, uses default/current selection
+    
+    Returns:
+        list[str]: List of available events/Grand Prix
+    """
+    # Select season first if provided
+    if season:
+        normalized_season = normalize_season_format(season)
+        select_option_by_type(page=page, select_field_name="Season", option_text=normalized_season)
+    
+    return get_select_options(page=page, select_field_name="Event")
 
 def get_docs(*, page) -> list[dict]:
     """
