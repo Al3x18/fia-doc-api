@@ -31,9 +31,9 @@ def api_documentation():
     """
     return render_template('documentation.html',
                          title="FIA Documents API",
-                         version="1.0.0",
+                         version="1.0.1",
                          description="API for retrieving and downloading FIA Formula 1 documents",
-                         base_url="https://fia-doc-api-production.up.railway.app/")
+                            base_url="http://localhost:4050/")
 
 @app.route('/fia-documents', methods=['GET'])
 def get_fia_documents():
