@@ -36,6 +36,8 @@
                             absolute)</li>
                         <li><strong>Direct document downloads</strong> without server-side storage</li>
                         <li><strong>Flexible filtering</strong> by season, championship, and event</li>
+                        <li><strong>Discovery endpoints</strong> to explore available seasons, championships, and events</li>
+                        <li><strong>Automatic season normalization</strong> for easier parameter handling</li>
                     </ul>
                 </div>
             </section>
@@ -43,6 +45,12 @@
             <section>
                 <h2>Quick Start</h2>
                 <ol>
+                    <li><strong>Explore Available Data:</strong> Use the discovery endpoints to see what's available:
+                        <ul>
+                            <li><code>GET /get-seasons-available</code> - List all available seasons</li>
+                            <li><code>GET /get-gp-available</code> - List all Grand Prix events for a season</li>
+                        </ul>
+                    </li>
                     <li><strong>Get Documents:</strong> Call <code>GET /fia-documents</code> to retrieve available
                         documents for the current season</li>
                     <li><strong>Find Your Document:</strong> Browse the returned list and copy the <code>url</code>
@@ -64,6 +72,326 @@
                     <p><strong>Purpose:</strong> Returns this interactive documentation page</p>
                     <p><strong>Response:</strong> HTML page with complete API documentation and testing interface</p>
                 </div>
+
+                <!-- Discovery Endpoints Section -->
+                <h3>Discovery Endpoints</h3>
+                <p>These endpoints help you explore what data is available before making specific document requests.</p>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/get-seasons-available</code>
+                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-seasons-available')">Copy</button>
+                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-seasons-available')">Try</button>
+                    </div>
+
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint retrieves all available Formula 1 seasons from the FIA documents portal. It's useful for:</p>
+                    <ul>
+                        <li>Discovering which years have data available</li>
+                        <li>Building season selection dropdowns in applications</li>
+                        <li>Understanding the historical range of available documents</li>
+                        <li>Planning data collection for specific time periods</li>
+                    </ul>
+
+                    <h3>No Parameters Required</h3>
+                    <p>This endpoint doesn't require any parameters. It returns all seasons available on the FIA website.</p>
+
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Get all available seasons:</strong></p>
+                        <code>GET {{ base_url }}/get-seasons-available</code>
+                    </div>
+
+                    <h3>Response Structure</h3>
+                    <pre><code>{
+  "message": "Available seasons retrieved",
+  "count": 10,
+  "seasons": [
+    "SEASON 2025",
+    "SEASON 2024", 
+    "SEASON 2023",
+    "SEASON 2022",
+    "SEASON 2021",
+    "SEASON 2020",
+    "SEASON 2019",
+    "SEASON 2018",
+    "SEASON 2017",
+    "SEASON 2016"
+  ]
+}</code></pre>
+
+                    <h3>Response Fields Explained</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td><code>message</code></td>
+                            <td>string</td>
+                            <td>Status message indicating successful retrieval</td>
+                        </tr>
+                        <tr>
+                            <td><code>count</code></td>
+                            <td>number</td>
+                            <td>Total number of available seasons</td>
+                        </tr>
+                        <tr>
+                            <td><code>seasons</code></td>
+                            <td>array</td>
+                            <td>Array of season strings in FIA format (e.g., "SEASON 2024")</td>
+                        </tr>
+                    </table>
+
+                    <div class="note-box">
+                        <h4>Season Format</h4>
+                        <p>All seasons are returned in the format <code>"SEASON YYYY"</code>. This is the exact format expected by other endpoints when specifying a season parameter.</p>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/get-championships-available</code>
+                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-championships-available')">Copy</button>
+                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-championships-available')">Try</button>
+                    </div>
+
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint retrieves all available championships for a specific season. It's useful for:</p>
+                    <ul>
+                        <li>Discovering which championships are available for a given year</li>
+                        <li>Understanding the different series that FIA manages</li>
+                        <li>Building championship selection interfaces</li>
+                        <li>Exploring historical championship data</li>
+                    </ul>
+
+                    <h3>Query Parameters (Optional)</h3>
+                    <table>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                        </tr>
+                        <tr>
+                            <td><code>season</code></td>
+                            <td>string</td>
+                            <td>❌ No</td>
+                            <td>Season to get championships for. If not provided, uses current default selection</td>
+                            <td><code>?season=SEASON 2024</code></td>
+                        </tr>
+                    </table>
+
+                    <h3>Season Parameter Flexibility</h3>
+                    <p>The <code>season</code> parameter accepts multiple formats:</p>
+                    <ul>
+                        <li><strong>Full format:</strong> <code>SEASON 2024</code></li>
+                        <li><strong>Year only:</strong> <code>2024</code> (automatically converted to <code>SEASON 2024</code>)</li>
+                        <li><strong>No parameter:</strong> Uses the current default season selection</li>
+                    </ul>
+
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Get championships for current default season:</strong></p>
+                        <code>GET {{ base_url }}/get-championships-available</code>
+
+                        <p><strong>Get championships for specific season (full format):</strong></p>
+                        <code>GET {{ base_url }}/get-championships-available?season=SEASON 2024</code>
+
+                        <p><strong>Get championships for specific season (year only):</strong></p>
+                        <code>GET {{ base_url }}/get-championships-available?season=2024</code>
+                    </div>
+
+                    <h3>Response Structure</h3>
+                    <pre><code>{
+  "message": "Available championships retrieved",
+  "season": "SEASON 2024",
+  "count": 1,
+  "championships": [
+    "FIA Formula One World Championship"
+  ]
+}</code></pre>
+
+                    <h3>Response Fields Explained</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td><code>message</code></td>
+                            <td>string</td>
+                            <td>Status message indicating successful retrieval</td>
+                        </tr>
+                        <tr>
+                            <td><code>season</code></td>
+                            <td>string</td>
+                            <td>The season that was queried (or "default" if no season specified)</td>
+                        </tr>
+                        <tr>
+                            <td><code>count</code></td>
+                            <td>number</td>
+                            <td>Total number of available championships for the specified season</td>
+                        </tr>
+                        <tr>
+                            <td><code>championships</code></td>
+                            <td>array</td>
+                            <td>Array of championship names available for the specified season</td>
+                        </tr>
+                    </table>
+
+                    <div class="note-box">
+                        <h4>Championship Availability</h4>
+                        <p>Most seasons typically have only "FIA Formula One World Championship" available, as this API focuses on Formula 1 documents. Other championships may be available for different years.</p>
+                    </div>
+                </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/get-gp-available</code>
+                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-gp-available')">Copy</button>
+                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-gp-available')">Try</button>
+                    </div>
+
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint retrieves all available Grand Prix events for a specific season. It's useful for:</p>
+                    <ul>
+                        <li>Discovering which Grand Prix events took place in a given season</li>
+                        <li>Building event selection interfaces for applications</li>
+                        <li>Understanding the F1 calendar for different years</li>
+                        <li>Planning document retrieval for specific events</li>
+                        <li>Exploring historical race calendars</li>
+                    </ul>
+
+                    <h3>Query Parameters (Optional)</h3>
+                    <table>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                            <th>Example</th>
+                        </tr>
+                        <tr>
+                            <td><code>season</code></td>
+                            <td>string</td>
+                            <td>❌ No</td>
+                            <td>Season to get Grand Prix events for. If not provided, uses current default selection</td>
+                            <td><code>?season=SEASON 2024</code></td>
+                        </tr>
+                    </table>
+
+                    <h3>Season Parameter Flexibility</h3>
+                    <p>The <code>season</code> parameter accepts multiple formats:</p>
+                    <ul>
+                        <li><strong>Full format:</strong> <code>SEASON 2024</code></li>
+                        <li><strong>Year only:</strong> <code>2024</code> (automatically converted to <code>SEASON 2024</code>)</li>
+                        <li><strong>No parameter:</strong> Uses the current default season selection</li>
+                    </ul>
+
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Get Grand Prix events for current default season:</strong></p>
+                        <code>GET {{ base_url }}/get-gp-available</code>
+
+                        <p><strong>Get Grand Prix events for specific season (full format):</strong></p>
+                        <code>GET {{ base_url }}/get-gp-available?season=SEASON 2024</code>
+
+                        <p><strong>Get Grand Prix events for specific season (year only):</strong></p>
+                        <code>GET {{ base_url }}/get-gp-available?season=2024</code>
+
+                        <p><strong>Get Grand Prix events for historical season:</strong></p>
+                        <code>GET {{ base_url }}/get-gp-available?season=2020</code>
+                    </div>
+
+                    <h3>Response Structure</h3>
+                    <pre><code>{
+  "message": "Available Grand Prix events retrieved",
+  "season": "SEASON 2024",
+  "count": 24,
+  "events": [
+    "Bahrain Grand Prix",
+    "Saudi Arabian Grand Prix",
+    "Australian Grand Prix",
+    "Japanese Grand Prix",
+    "Chinese Grand Prix",
+    "Miami Grand Prix",
+    "Emilia Romagna Grand Prix",
+    "Monaco Grand Prix",
+    "Canadian Grand Prix",
+    "Spanish Grand Prix",
+    "Austrian Grand Prix",
+    "British Grand Prix",
+    "Hungarian Grand Prix",
+    "Belgian Grand Prix",
+    "Dutch Grand Prix",
+    "Italian Grand Prix",
+    "Azerbaijan Grand Prix",
+    "Singapore Grand Prix",
+    "United States Grand Prix",
+    "Mexico City Grand Prix",
+    "Brazilian Grand Prix",
+    "Las Vegas Grand Prix",
+    "Qatar Grand Prix",
+    "Abu Dhabi Grand Prix"
+  ]
+}</code></pre>
+
+                    <h3>Response Fields Explained</h3>
+                    <table>
+                        <tr>
+                            <th>Field</th>
+                            <th>Type</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td><code>message</code></td>
+                            <td>string</td>
+                            <td>Status message indicating successful retrieval</td>
+                        </tr>
+                        <tr>
+                            <td><code>season</code></td>
+                            <td>string</td>
+                            <td>The season that was queried (or "default" if no season specified)</td>
+                        </tr>
+                        <tr>
+                            <td><code>count</code></td>
+                            <td>number</td>
+                            <td>Total number of Grand Prix events for the specified season</td>
+                        </tr>
+                        <tr>
+                            <td><code>events</code></td>
+                            <td>array</td>
+                            <td>Array of Grand Prix event names for the specified season</td>
+                        </tr>
+                    </table>
+
+                    <div class="note-box">
+                        <h4>Event Ordering</h4>
+                        <p>Events are typically returned in chronological order as they occurred during the season. This helps applications display events in the correct sequence.</p>
+                    </div>
+
+                    <div class="note-box">
+                        <h4>Season Variations</h4>
+                        <p>Different seasons may have different numbers of events. For example:
+                        <ul>
+                            <li><strong>2024:</strong> 24 Grand Prix events</li>
+                            <li><strong>2023:</strong> 23 Grand Prix events</li>
+                            <li><strong>2020:</strong> 17 Grand Prix events (COVID-19 affected season)</li>
+                        </ul>
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Document Retrieval Endpoints Section -->
+                <h3>Document Retrieval Endpoints</h3>
+                <p>These endpoints retrieve actual FIA documents and metadata.</p>
 
                 <div class="endpoint">
                     <div class="endpoint-header">
@@ -95,7 +423,7 @@
                         </tr>
                         <tr>
                             <td><code>season</code></td>
-                            <td>SEASON 2025</td>
+                            <td>Current year</td>
                             <td>F1 season year to filter by</td>
                             <td><code>?season=SEASON 2024</code></td>
                         </tr>
@@ -123,6 +451,9 @@
 
                         <p><strong>Get documents from previous season:</strong></p>
                         <code>GET {{ base_url }}/fia-documents?season=SEASON 2024</code>
+
+                        <p><strong>Get documents for specific event in specific season:</strong></p>
+                        <code>GET {{ base_url }}/fia-documents?season=SEASON 2024&event=Belgian Grand Prix</code>
                     </div>
 
                     <h3>Response Structure</h3>
@@ -292,6 +623,39 @@
             </section>
 
             <section>
+                <h2>Workflow Examples</h2>
+                <div class="info-box">
+                    <h3>Complete Workflow: Get Documents for Monaco 2024</h3>
+                    <ol>
+                        <li><strong>Discover available seasons:</strong>
+                            <code>GET {{ base_url }}/get-seasons-available</code>
+                        </li>
+                        <li><strong>Get Grand Prix events for 2024:</strong>
+                            <code>GET {{ base_url }}/get-gp-available?season=2024</code>
+                        </li>
+                        <li><strong>Retrieve documents for Monaco GP:</strong>
+                            <code>GET {{ base_url }}/fia-documents?season=SEASON 2024&event=Monaco Grand Prix</code>
+                        </li>
+                        <li><strong>Download a specific document:</strong>
+                            <code>GET {{ base_url }}/download-fia-doc?url={document_url}</code>
+                        </li>
+                    </ol>
+                </div>
+
+                <div class="info-box">
+                    <h3>Quick Workflow: Get Latest Documents</h3>
+                    <ol>
+                        <li><strong>Get current season documents:</strong>
+                            <code>GET {{ base_url }}/fia-documents</code>
+                        </li>
+                        <li><strong>Download any document:</strong>
+                            <code>GET {{ base_url }}/download-fia-doc?url={document_url}</code>
+                        </li>
+                    </ol>
+                </div>
+            </section>
+
+            <section>
                 <h2>Document Types You Can Retrieve</h2>
                 <div class="info-box">
                     <p>The API can retrieve various types of official FIA documents:</p>
@@ -334,6 +698,12 @@
                         <td>Unable to fetch document from provided URL</td>
                         <td>Verify the URL is valid and the document still exists</td>
                     </tr>
+                    <tr>
+                        <td>500</td>
+                        <td>Selection Timeout</td>
+                        <td>Season/event selection failed due to website changes or network issues</td>
+                        <td>Try with a different season or retry the request</td>
+                    </tr>
                 </table>
             </section>
 
@@ -346,6 +716,7 @@
                         <li>Web scraping requests take 3-8 seconds due to browser automation</li>
                         <li>Downloads are immediate once the document URL is known</li>
                         <li>Consider caching results if making frequent requests</li>
+                        <li>Discovery endpoints are faster than document retrieval endpoints</li>
                     </ul>
 
                     <h3>Data Processing</h3>
@@ -353,6 +724,7 @@
                         <li><strong>Date Conversion:</strong> FIA format "27.07.25 19:58 CET" → ISO
                             "2025-07-27T19:58:00"</li>
                         <li><strong>URL Processing:</strong> Relative paths are converted to absolute URLs</li>
+                        <li><strong>Season Normalization:</strong> "2024" → "SEASON 2024" automatic conversion</li>
                         <li><strong>Browser Automation:</strong> Uses Playwright with Chromium for reliable scraping
                         </li>
                         <li><strong>No Data Storage:</strong> All operations are performed in real-time</li>
@@ -363,6 +735,7 @@
                         <li>Requires stable internet connection to FIA website</li>
                         <li>Dependent on FIA website structure (may break if they change their HTML)</li>
                         <li>Uses headless Chromium browser for JavaScript-heavy FIA site</li>
+                        <li>Automatic retry logic for network issues</li>
                     </ul>
                 </div>
             </section>
