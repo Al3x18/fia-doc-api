@@ -44,7 +44,7 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
         bool: True if selection was successful, False otherwise
     """
 
-    WAIT_UPLOAD_PAGE_TIME = 650
+    WAIT_UPLOAD_PAGE_TIME = 800
 
     select_wrappers = page.query_selector_all('.select-field-wrapper')
 
