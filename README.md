@@ -115,8 +115,7 @@ fia-doc-api/
 - **Backend**: Flask (Python web framework)
 - **Web Scraping**: Playwright (headless browser automation)
 - **HTTP Requests**: Requests library for file downloads
-- **Frontend**: Vanilla HTML/CSS/JavaScript with dark theme
-- **Date Processing**: Python datetime for ISO 8601 conversion
+- **Frontend**: HTML/CSS/JavaScript with dark theme
 
 ## 📋 Available Document Types
 
