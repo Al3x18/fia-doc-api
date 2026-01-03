@@ -89,6 +89,9 @@ def get_fia_documents():
                 if season_selected:
                     season = fallback_season
                     logger.info(f"Successfully selected fallback season: {fallback_season}\n")
+                    # Wait for page to stabilize after fallback selection (navigation may occur)
+                    page.wait_for_selector('.select-field-wrapper', timeout=1000)
+                    page.wait_for_timeout(500)  # Additional wait for page to be fully ready
                 else:
                     logger.error(f"Failed to select both {season} and fallback {fallback_season}\n")
 
