@@ -70,7 +70,24 @@ def get_fia_documents():
 
         # The page will be updated every selection, this is managed in the select_option_by_type function
         if season:
-            select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=season)
+            season_selected = select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=season)
+            
+            # If season selection failed (e.g. new season data not yet available), try with previous year as fallback
+            if not season_selected:
+                current_year = datetime.now().year
+                previous_year = current_year - 1
+                fallback_season = f"SEASON {previous_year}"
+                logger.info(f"Season {season} not available, trying fallback: {fallback_season}\n")
+                season_selected = select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=fallback_season)
+                
+                if season_selected:
+                    season = fallback_season
+                    logger.info(f"Successfully selected fallback season: {fallback_season}\n")
+                    # Wait for page to stabilize after fallback selection (navigation may occur)
+                    page.wait_for_selector('.select-field-wrapper', timeout=1000)
+                    page.wait_for_timeout(500)  # Additional wait for page to be fully ready
+                else:
+                    logger.error(f"Failed to select both {season} and fallback {fallback_season}\n")
 
         if championship:
             select_option_by_type(page=page, select_field_name=SELECT_FIELD_CHAMPIONSHIP_DEFAULT_VALUE, option_text=championship)

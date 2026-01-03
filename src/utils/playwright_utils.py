@@ -44,7 +44,7 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
         bool: True if selection was successful, False otherwise
     """
 
-    WAIT_UPLOAD_PAGE_TIME = 800
+    WAIT_UPLOAD_PAGE_TIME = 850
 
     select_wrappers = page.query_selector_all('.select-field-wrapper')
 
@@ -58,9 +58,13 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
 
             if current_select_type == select_field_name:
                 logger.info(f"Selecting {option_text} in {select_field_name}\n")
-                select_element.select_option(label=option_text)
-                page.wait_for_timeout(WAIT_UPLOAD_PAGE_TIME)  # Wait for page to be ready
-                return True
+                try:
+                    select_element.select_option(label=option_text)
+                    page.wait_for_timeout(WAIT_UPLOAD_PAGE_TIME)  # Wait for page to be ready
+                    return True
+                except Exception as e:
+                    logger.warning(f"Failed to select {option_text} in {select_field_name}: {e}")
+                    return False
     return False
 
 def get_select_options(*, page, select_field_name) -> list[str]:
