@@ -4,6 +4,9 @@ FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
 # Set the working directory inside the container
 WORKDIR /app
 
+# Add src to PYTHONPATH
+ENV PYTHONPATH=/app/src:$PYTHONPATH
+
 # Copy all project files into the container
 COPY . /app
 
