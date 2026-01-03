@@ -14,5 +14,7 @@ RUN pip install -r requirements.txt
 # Install Playwright browsers (Chromium, Firefox, WebKit)
 RUN playwright install
 
-# Run the Flask app (make sure your app reads the port from os.environ["PORT"])
-CMD ["python", "src/app.py"]
+# Run the Flask app with Gunicorn (production WSGI server)
+# Railway will set the PORT environment variable dynamically
+# Use 0.0.0.0 to bind to all interfaces and read PORT from environment
+CMD gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} --timeout 120 --access-logfile - --error-logfile - src.app:app
