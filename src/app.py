@@ -2,7 +2,7 @@ from datetime import datetime
 import logging
 import os
 import json
-from flask import Flask, jsonify, render_template, Response
+from flask import Flask, jsonify, render_template, Response, request, send_file
 from playwright.sync_api import sync_playwright
 from utils.playwright_utils import (
     select_option_by_type,
@@ -13,11 +13,11 @@ from utils.playwright_utils import (
     get_available_events,
     normalize_season_format
 )
+from utils.track_assets_utils import normalize_track_name, get_track_assets_dirs
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
-from flask import request, Response
 
 app = Flask(__name__)
 
@@ -314,6 +314,42 @@ def get_gp_available():
     except Exception as e:
         logger.error(f"Error retrieving Grand Prix events: {e}")
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/track-image', methods=['GET'])
+def get_track_image():
+    """
+    Return track PNG image based on `track_name` query parameter.
+    Example: /track-image?track_name=Bahrain%20International%20Circuit
+    """
+    track_name = request.args.get('track_name', '').strip()
+    if not track_name:
+        return jsonify({'error': 'track_name query parameter is required'}), 400
+
+    requested = normalize_track_name(track_name)
+    candidate_paths = []
+
+    for assets_dir in get_track_assets_dirs(app_root_path=app.root_path):
+        if not os.path.isdir(assets_dir):
+            continue
+
+        for entry in os.listdir(assets_dir):
+            file_path = os.path.join(assets_dir, entry)
+            if not os.path.isfile(file_path) or not entry.lower().endswith('.png'):
+                continue
+
+            base_name, _ = os.path.splitext(entry)
+            if normalize_track_name(base_name) == requested:
+                return send_file(file_path, mimetype='image/png')
+
+            candidate_paths.append(file_path)
+
+    if not candidate_paths:
+        return jsonify({'error': 'f1Tracks directory not found or contains no PNG files'}), 404
+
+    return jsonify({
+        'error': f'No PNG found for track_name "{track_name}"'
+    }), 404
 
 if __name__ == '__main__':
     port = int(os.environ.get("PORT", 4050))  # Use 4050 in local, otherwise the PORT of Railway

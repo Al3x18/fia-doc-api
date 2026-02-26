@@ -37,6 +37,7 @@
                         <li><strong>Direct document downloads</strong> without server-side storage</li>
                         <li><strong>Flexible filtering</strong> by season, championship, and event</li>
                         <li><strong>Discovery endpoints</strong> to explore available seasons, championships, and events</li>
+                        <li><strong>Track image delivery</strong> by circuit name from local <code>f1Tracks</code> assets</li>
                         <li><strong>Automatic season normalization</strong> for easier parameter handling</li>
                     </ul>
                 </div>
@@ -57,6 +58,8 @@
                         field of your desired document</li>
                     <li><strong>Download:</strong> Use <code>GET /download-fia-doc?url={document_url}</code> to download
                         the PDF file</li>
+                    <li><strong>Track Image (Optional):</strong> Use <code>GET /track-image?track_name={circuit_name}</code>
+                        to retrieve the circuit PNG</li>
                 </ol>
             </section>
 
@@ -620,6 +623,55 @@
                             work and could cause errors.</p>
                     </div>
                 </div>
+
+                <div class="endpoint">
+                    <div class="endpoint-header">
+                        <span class="method">GET</span>
+                        <code class="path">/track-image</code>
+                        <button class="btn"
+                            onclick="copyToClipboard('{{ base_url }}/track-image?track_name=Suzuka%20Circuit')">Copy</button>
+                        <button class="btn primary"
+                            onclick="openUrl('{{ base_url }}/track-image?track_name=Suzuka%20Circuit')">Try</button>
+                    </div>
+
+                    <h3>What This Endpoint Does</h3>
+                    <p>This endpoint returns a circuit image in PNG format from the local <code>f1Tracks</code> assets
+                        directory.</p>
+                    <ul>
+                        <li>Accepts a track/circuit name via query parameter</li>
+                        <li>Matches file names in a case-insensitive way</li>
+                        <li>Normalizes separators (spaces, dashes, underscores) for flexible matching</li>
+                        <li>Streams the image with <code>Content-Type: image/png</code></li>
+                    </ul>
+
+                    <h3>Required Parameters</h3>
+                    <table>
+                        <tr>
+                            <th>Parameter</th>
+                            <th>Type</th>
+                            <th>Required</th>
+                            <th>Description</th>
+                        </tr>
+                        <tr>
+                            <td><code>track_name</code></td>
+                            <td>string</td>
+                            <td>✅ Yes</td>
+                            <td>Circuit name, e.g. <code>Suzuka Circuit</code></td>
+                        </tr>
+                    </table>
+
+                    <h3>Example Usage</h3>
+                    <div class="example-box">
+                        <p><strong>Get Suzuka PNG:</strong></p>
+                        <code>GET {{ base_url }}/track-image?track_name=Suzuka Circuit</code>
+                    </div>
+
+                    <h3>Response</h3>
+                    <p><strong>Success (200):</strong> Raw PNG image bytes with header:</p>
+                    <ul>
+                        <li><code>Content-Type: image/png</code></li>
+                    </ul>
+                </div>
             </section>
 
             <section>
@@ -685,6 +737,18 @@
                         <td>Bad Request</td>
                         <td>Missing required <code>url</code> parameter for download endpoint</td>
                         <td>Provide a valid URL parameter</td>
+                    </tr>
+                    <tr>
+                        <td>400</td>
+                        <td>Bad Request</td>
+                        <td>Missing required <code>track_name</code> parameter for <code>/track-image</code> endpoint</td>
+                        <td>Provide a valid circuit name in <code>track_name</code></td>
+                    </tr>
+                    <tr>
+                        <td>404</td>
+                        <td>Not Found</td>
+                        <td>Track image not found in <code>f1Tracks</code> or assets folder missing</td>
+                        <td>Check the exact circuit name and ensure the PNG exists in <code>f1Tracks</code></td>
                     </tr>
                     <tr>
                         <td>500</td>

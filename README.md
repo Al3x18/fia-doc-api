@@ -10,6 +10,7 @@ A Flask-based REST API that scrapes and provides access to official FIA Formula 
 - **Interactive Documentation**: Beautiful dark-themed API documentation with live testing
 - **Flexible Filtering**: Filter by season, championship, and specific events
 - **Multiple Document Types**: Race results, qualifying, practice, stewards' decisions, and technical docs
+- **Track Images Endpoint**: Serve circuit PNG assets by track name from `f1Tracks`
 
 ## 🚀 Quick Start
 
@@ -56,6 +57,7 @@ The API will be available at `http://localhost:4050`
 | `GET` | `/` | Interactive API documentation |
 | `GET` | `/fia-documents` | Retrieve FIA documents with optional filters |
 | `GET` | `/download-fia-doc` | Download specific documents by URL |
+| `GET` | `/track-image` | Retrieve track PNG image by `track_name` query parameter |
 
 ### Example Usage
 
@@ -71,6 +73,9 @@ curl "http://localhost:4050/fia-documents?season=SEASON%202024"
 
 # Download a specific document
 curl "http://localhost:4050/download-fia-doc?url=https://www.fia.com/sites/default/files/..."
+
+# Get track PNG image by circuit name
+curl "http://localhost:4050/track-image?track_name=Suzuka%20Circuit" --output suzuka.png
 ```
 
 ### Response Format
@@ -100,12 +105,14 @@ curl "http://localhost:4050/download-fia-doc?url=https://www.fia.com/sites/defau
 fia-doc-api/
 ├── src/
 │   ├── app.py                 # Main Flask application
+│   ├── f1Tracks/              # Circuit PNG assets for /track-image endpoint
 │   ├── static/css/style.css   # Dark-themed documentation styles
 │   ├── templates/
 │   │   └── documentation.html # Interactive API documentation
 │   └── utils/
 │       ├── __init__.py
-│       └── playwright_utils.py # Web scraping utilities
+│       ├── playwright_utils.py # Web scraping utilities
+│       └── track_assets_utils.py # Track assets matching utilities
 ├── requirements.txt           # Python dependencies
 └── README.md
 ```
