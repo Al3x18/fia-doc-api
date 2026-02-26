@@ -18,11 +18,6 @@
 
         <main>
             <section>
-                <h2>Base URL</h2>
-                <code class="base-url">{{ base_url }}</code>
-            </section>
-
-            <section>
                 <h2>Overview</h2>
                 <p>This API provides automated access to official FIA Formula 1 documents by scraping the FIA website.
                     It retrieves race classifications, penalties, technical regulations, and other official race
@@ -70,7 +65,7 @@
                     <div class="endpoint-header">
                         <span class="method">GET</span>
                         <code class="path">/</code>
-                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/')">Copy</button>
+                        <button class="btn" onclick="copyToClipboard('/')">Copy</button>
                     </div>
                     <p><strong>Purpose:</strong> Returns this interactive documentation page</p>
                     <p><strong>Response:</strong> HTML page with complete API documentation and testing interface</p>
@@ -84,8 +79,7 @@
                     <div class="endpoint-header">
                         <span class="method">GET</span>
                         <code class="path">/get-seasons-available</code>
-                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-seasons-available')">Copy</button>
-                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-seasons-available')">Try</button>
+                        <button class="btn" onclick="copyToClipboard('/get-seasons-available')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -103,7 +97,7 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Get all available seasons:</strong></p>
-                        <code>GET {{ base_url }}/get-seasons-available</code>
+                        <code>GET /get-seasons-available</code>
                     </div>
 
                     <h3>Response Structure</h3>
@@ -158,8 +152,7 @@
                     <div class="endpoint-header">
                         <span class="method">GET</span>
                         <code class="path">/get-championships-available</code>
-                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-championships-available')">Copy</button>
-                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-championships-available')">Try</button>
+                        <button class="btn" onclick="copyToClipboard('/get-championships-available')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -200,13 +193,13 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Get championships for current default season:</strong></p>
-                        <code>GET {{ base_url }}/get-championships-available</code>
+                        <code>GET /get-championships-available</code>
 
                         <p><strong>Get championships for specific season (full format):</strong></p>
-                        <code>GET {{ base_url }}/get-championships-available?season=SEASON 2024</code>
+                        <code>GET /get-championships-available?season=SEASON 2024</code>
 
                         <p><strong>Get championships for specific season (year only):</strong></p>
-                        <code>GET {{ base_url }}/get-championships-available?season=2024</code>
+                        <code>GET /get-championships-available?season=2024</code>
                     </div>
 
                     <h3>Response Structure</h3>
@@ -258,8 +251,7 @@
                     <div class="endpoint-header">
                         <span class="method">GET</span>
                         <code class="path">/get-gp-available</code>
-                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/get-gp-available')">Copy</button>
-                        <button class="btn primary" onclick="openUrl('{{ base_url }}/get-gp-available')">Try</button>
+                        <button class="btn" onclick="copyToClipboard('/get-gp-available')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -301,16 +293,16 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Get Grand Prix events for current default season:</strong></p>
-                        <code>GET {{ base_url }}/get-gp-available</code>
+                        <code>GET /get-gp-available</code>
 
                         <p><strong>Get Grand Prix events for specific season (full format):</strong></p>
-                        <code>GET {{ base_url }}/get-gp-available?season=SEASON 2024</code>
+                        <code>GET /get-gp-available?season=SEASON 2024</code>
 
                         <p><strong>Get Grand Prix events for specific season (year only):</strong></p>
-                        <code>GET {{ base_url }}/get-gp-available?season=2024</code>
+                        <code>GET /get-gp-available?season=2024</code>
 
                         <p><strong>Get Grand Prix events for historical season:</strong></p>
-                        <code>GET {{ base_url }}/get-gp-available?season=2020</code>
+                        <code>GET /get-gp-available?season=2020</code>
                     </div>
 
                     <h3>Response Structure</h3>
@@ -400,8 +392,7 @@
                     <div class="endpoint-header">
                         <span class="method">GET</span>
                         <code class="path">/fia-documents</code>
-                        <button class="btn" onclick="copyToClipboard('{{ base_url }}/fia-documents')">Copy</button>
-                        <button class="btn primary" onclick="openUrl('{{ base_url }}/fia-documents')">Try</button>
+                        <button class="btn" onclick="copyToClipboard('/fia-documents')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -447,16 +438,16 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Get latest documents:</strong></p>
-                        <code>GET {{ base_url }}/fia-documents</code>
+                        <code>GET /fia-documents</code>
 
                         <p><strong>Get documents for specific event:</strong></p>
-                        <code>GET {{ base_url }}/fia-documents?event=Monaco Grand Prix</code>
+                        <code>GET /fia-documents?event=Monaco Grand Prix</code>
 
                         <p><strong>Get documents from previous season:</strong></p>
-                        <code>GET {{ base_url }}/fia-documents?season=SEASON 2024</code>
+                        <code>GET /fia-documents?season=SEASON 2024</code>
 
                         <p><strong>Get documents for specific event in specific season:</strong></p>
-                        <code>GET {{ base_url }}/fia-documents?season=SEASON 2024&event=Belgian Grand Prix</code>
+                        <code>GET /fia-documents?season=SEASON 2024&event=Belgian Grand Prix</code>
                     </div>
 
                     <h3>Response Structure</h3>
@@ -575,7 +566,7 @@
                         <span class="method">GET</span>
                         <code class="path">/download-fia-doc</code>
                         <button class="btn"
-                            onclick="copyToClipboard('{{ base_url }}/download-fia-doc?url=')">Copy</button>
+                            onclick="copyToClipboard('/download-fia-doc?url=')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -607,7 +598,7 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Download a specific document:</strong></p>
-                        <code>GET {{ base_url }}/download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf</code>
+                        <code>GET /download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf</code>
                     </div>
 
                     <h3>Response</h3>
@@ -629,9 +620,7 @@
                         <span class="method">GET</span>
                         <code class="path">/track-image</code>
                         <button class="btn"
-                            onclick="copyToClipboard('{{ base_url }}/track-image?track_name=Suzuka%20Circuit')">Copy</button>
-                        <button class="btn primary"
-                            onclick="openUrl('{{ base_url }}/track-image?track_name=Suzuka%20Circuit')">Try</button>
+                            onclick="copyToClipboard('/track-image?track_name=Suzuka%20Circuit')">Copy</button>
                     </div>
 
                     <h3>What This Endpoint Does</h3>
@@ -663,7 +652,7 @@
                     <h3>Example Usage</h3>
                     <div class="example-box">
                         <p><strong>Get Suzuka PNG:</strong></p>
-                        <code>GET {{ base_url }}/track-image?track_name=Suzuka Circuit</code>
+                        <code>GET /track-image?track_name=Suzuka Circuit</code>
                     </div>
 
                     <h3>Response</h3>
@@ -680,16 +669,16 @@
                     <h3>Complete Workflow: Get Documents for Monaco 2024</h3>
                     <ol>
                         <li><strong>Discover available seasons:</strong>
-                            <code>GET {{ base_url }}/get-seasons-available</code>
+                            <code>GET /get-seasons-available</code>
                         </li>
                         <li><strong>Get Grand Prix events for 2024:</strong>
-                            <code>GET {{ base_url }}/get-gp-available?season=2024</code>
+                            <code>GET /get-gp-available?season=2024</code>
                         </li>
                         <li><strong>Retrieve documents for Monaco GP:</strong>
-                            <code>GET {{ base_url }}/fia-documents?season=SEASON 2024&event=Monaco Grand Prix</code>
+                            <code>GET /fia-documents?season=SEASON 2024&event=Monaco Grand Prix</code>
                         </li>
                         <li><strong>Download a specific document:</strong>
-                            <code>GET {{ base_url }}/download-fia-doc?url={document_url}</code>
+                            <code>GET /download-fia-doc?url={document_url}</code>
                         </li>
                     </ol>
                 </div>
@@ -698,10 +687,10 @@
                     <h3>Quick Workflow: Get Latest Documents</h3>
                     <ol>
                         <li><strong>Get current season documents:</strong>
-                            <code>GET {{ base_url }}/fia-documents</code>
+                            <code>GET /fia-documents</code>
                         </li>
                         <li><strong>Download any document:</strong>
-                            <code>GET {{ base_url }}/download-fia-doc?url={document_url}</code>
+                            <code>GET /download-fia-doc?url={document_url}</code>
                         </li>
                     </ol>
                 </div>
@@ -827,9 +816,6 @@
             setTimeout(() => toast.classList.remove('show'), 2000);
         }
 
-        function openUrl(url) {
-            window.open(url, '_blank');
-        }
     </script>
 </body>
 

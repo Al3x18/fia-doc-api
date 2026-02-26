@@ -105,6 +105,7 @@ curl "http://localhost:4050/track-image?track_name=Suzuka%20Circuit" --output su
 fia-doc-api/
 ├── src/
 │   ├── app.py                 # Main Flask application
+│   ├── server_info.json       # Server version shown in documentation header
 │   ├── f1Tracks/              # Circuit PNG assets for /track-image endpoint
 │   ├── static/css/style.css   # Dark-themed documentation styles
 │   ├── templates/

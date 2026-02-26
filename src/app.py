@@ -24,6 +24,24 @@ app = Flask(__name__)
 # Configuration constants
 FIA_DOCUMENTS_URL = 'https://www.fia.com/documents/championships/fia-formula-one-world-championship-14/season/'
 
+def get_server_version() -> str:
+    """
+    Read server version from local JSON config.
+    """
+    project_root = os.path.abspath(os.path.join(app.root_path, '..'))
+    version_file_path = os.path.join(project_root, 'server_info.json')
+
+    try:
+        with open(version_file_path, 'r', encoding='utf-8') as version_file:
+            payload = json.load(version_file)
+            version = payload.get('version')
+            if isinstance(version, str) and version.strip():
+                return version.strip()
+    except Exception as e:
+        logger.warning(f"Could not read server version from {version_file_path}: {e}")
+
+    return 'unknown'
+
 @app.route('/', methods=['GET'])
 def api_documentation():
     """
@@ -31,7 +49,7 @@ def api_documentation():
     """
     return render_template('documentation.html',
                          title="FIA Documents API",
-                         version="1.0.1",
+                         version=get_server_version(),
                          description="API for retrieving and downloading FIA Formula 1 documents",
                             base_url="http://localhost:4050/")
 
