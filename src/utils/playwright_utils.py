@@ -6,6 +6,18 @@ from datetime import datetime
 # Configure logging
 logger = logging.getLogger(__name__)
 
+def is_allowed_fia_url(url: str) -> bool:
+    """Return True only for HTTPS URLs hosted by fia.com or one of its subdomains."""
+    try:
+        parsed_url = urlparse(url)
+        hostname = (parsed_url.hostname or "").lower()
+        return (
+            parsed_url.scheme == "https"
+            and (hostname == "fia.com" or hostname.endswith(".fia.com"))
+        )
+    except (TypeError, ValueError):
+        return False
+
 def normalize_season_format(season_input):
     """
     Normalize season input to FIA expected format.
@@ -231,12 +243,22 @@ def download_file(*, url) -> tuple:
         tuple: (response_object, filename) or (None, None) if failed
     """
 
+    if not is_allowed_fia_url(url):
+        logger.warning("Rejected document download from a non-FIA URL")
+        return None, None
+
     try:
-        response = requests.get(url, stream=True)
+        response = requests.get(url, stream=True, timeout=(10, 60))
         response.raise_for_status()
 
+        # Requests follows redirects by default; validate the final destination too.
+        if not is_allowed_fia_url(response.url):
+            response.close()
+            logger.warning("Rejected document download redirected outside fia.com")
+            return None, None
+
         # Extract filename from URL
-        parsed_url = urlparse(url)
+        parsed_url = urlparse(response.url)
         filename = parsed_url.path.split('/')[-1]
         if not filename:
             filename = "document.pdf"

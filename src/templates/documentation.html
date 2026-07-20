@@ -59,6 +59,17 @@
             </section>
 
             <section>
+                <h2>Authentication</h2>
+                <p>The scraping, discovery, and document-download endpoints require an API key in every request:</p>
+                <pre><code>X-API-Key: your-api-key</code></pre>
+                <div class="example-box">
+                    <p><strong>Example:</strong></p>
+                    <code>curl -H "X-API-Key: your-api-key" https://your-service.up.railway.app/fia-documents</code>
+                </div>
+                <p>The documentation, health check, and <code>/track-image</code> endpoints are public.</p>
+            </section>
+
+            <section>
                 <h2>API Endpoints</h2>
 
                 <div class="endpoint">

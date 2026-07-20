@@ -1,23 +1,22 @@
-# Use the official Playwright Python image with all dependencies preinstalled
-FROM mcr.microsoft.com/playwright/python:v1.43.0-jammy
+# Keep the container image and the Python package on the same Playwright version.
+# This image already contains Chromium and its Linux system dependencies.
+FROM mcr.microsoft.com/playwright/python:v1.54.0-noble
 
-# Set the working directory inside the container
 WORKDIR /app
 
-# Add src to PYTHONPATH
-ENV PYTHONPATH=/app/src:$PYTHONPATH
+ENV PYTHONPATH=/app/src \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    WEB_CONCURRENCY=1 \
+    MALLOC_ARENA_MAX=2
 
-# Copy all project files into the container
-COPY . /app
+# Copy dependency metadata first so Railway can reuse the dependency layer.
+COPY requirements.txt .
+RUN pip install --no-cache-dir --upgrade pip \
+    && pip install --no-cache-dir -r requirements.txt
 
-# Upgrade pip and install Python dependencies
-RUN pip install --upgrade pip
-RUN pip install -r requirements.txt
+COPY . .
 
-# Install Playwright browsers (Chromium, Firefox, WebKit)
-RUN playwright install
-
-# Run the Flask app with Gunicorn (production WSGI server)
-# Railway will set the PORT environment variable dynamically
-# Use 0.0.0.0 to bind to all interfaces and read PORT from environment
-CMD gunicorn -w 4 -b 0.0.0.0:${PORT:-8080} --timeout 120 --access-logfile - --error-logfile - src.app:app
+# Railway injects PORT at runtime. A single worker prevents concurrent Chromium
+# processes from exhausting the memory available to a small Hobby instance.
+CMD ["sh", "-c", "exec gunicorn --workers ${WEB_CONCURRENCY:-1} --bind 0.0.0.0:${PORT:-8080} --timeout 120 --graceful-timeout 30 --access-logfile - --error-logfile - src.app:app"]

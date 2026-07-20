@@ -45,6 +45,7 @@ A Flask-based REST API that scrapes and provides access to official FIA Formula 
 
 5. **Run the application**
    ```bash
+   export FIA_DOCS_API_KEY="replace-with-a-long-random-value"
    python src/app.py
    ```
 
@@ -63,20 +64,24 @@ The API will be available at `http://localhost:4050`
 
 ```bash
 # Get latest documents
-curl "http://localhost:4050/fia-documents"
+curl -H "X-API-Key: $FIA_DOCS_API_KEY" "http://localhost:4050/fia-documents"
 
 # Get documents for specific event
-curl "http://localhost:4050/fia-documents?event=Monaco%20Grand%20Prix"
+curl -H "X-API-Key: $FIA_DOCS_API_KEY" "http://localhost:4050/fia-documents?event=Monaco%20Grand%20Prix"
 
 # Get documents from previous season
-curl "http://localhost:4050/fia-documents?season=SEASON%202024"
+curl -H "X-API-Key: $FIA_DOCS_API_KEY" "http://localhost:4050/fia-documents?season=SEASON%202024"
 
 # Download a specific document
-curl "http://localhost:4050/download-fia-doc?url=https://www.fia.com/sites/default/files/..."
+curl -H "X-API-Key: $FIA_DOCS_API_KEY" "http://localhost:4050/download-fia-doc?url=https://www.fia.com/sites/default/files/..."
 
 # Get track PNG image by circuit name
 curl "http://localhost:4050/track-image?track_name=Suzuka%20Circuit" --output suzuka.png
 ```
+
+The scraping and document-download endpoints require the `X-API-Key` header.
+Set `FIA_DOCS_API_KEY` as a secret environment variable in production. The
+documentation, health check, and track-image endpoints remain public.
 
 ### Response Format
 

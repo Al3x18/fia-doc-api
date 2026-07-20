@@ -1,7 +1,9 @@
 from datetime import datetime
+from functools import wraps
 import logging
 import os
 import json
+import secrets
 from flask import Flask, jsonify, render_template, Response, request, send_file
 from playwright.sync_api import sync_playwright
 from utils.playwright_utils import (
@@ -23,6 +25,32 @@ app = Flask(__name__)
 
 # Configuration constants
 FIA_DOCUMENTS_URL = 'https://www.fia.com/documents/championships/fia-formula-one-world-championship-14/season/'
+BROWSER_LAUNCH_OPTIONS = {
+    'headless': True,
+    # Railway containers have a small /dev/shm allocation. Keeping Chromium's
+    # shared-memory files under /tmp avoids renderer crashes on document pages.
+    'args': ['--disable-dev-shm-usage']
+}
+
+def require_api_key(view_function):
+    """Require the API key configured in the FIA_DOCS_API_KEY environment variable."""
+    @wraps(view_function)
+    def wrapped_view(*args, **kwargs):
+        configured_key = os.environ.get('FIA_DOCS_API_KEY', '')
+        if not configured_key:
+            logger.error('FIA_DOCS_API_KEY is not configured')
+            return jsonify({'error': 'API key authentication is not configured'}), 503
+
+        provided_key = request.headers.get('X-API-Key', '')
+        if not provided_key:
+            return jsonify({'error': 'X-API-Key header is required'}), 401
+
+        if not secrets.compare_digest(provided_key, configured_key):
+            return jsonify({'error': 'Invalid API key'}), 403
+
+        return view_function(*args, **kwargs)
+
+    return wrapped_view
 
 def get_server_version() -> str:
     """
@@ -53,7 +81,13 @@ def api_documentation():
                          description="API for retrieving and downloading FIA Formula 1 documents",
                             base_url="http://localhost:4050/")
 
+@app.route('/health', methods=['GET'])
+def health_check():
+    """Lightweight deployment health check; it intentionally does not start Chromium."""
+    return jsonify({'status': 'ok'}), 200
+
 @app.route('/fia-documents', methods=['GET'])
+@require_api_key
 def get_fia_documents():
     # Configuration constants
     SELECT_FIELD_SEASON_DEFAULT_VALUE = "Season"
@@ -72,7 +106,7 @@ def get_fia_documents():
     documents = []
 
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(**BROWSER_LAUNCH_OPTIONS)
         page = browser.new_page()
 
         page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
@@ -143,6 +177,7 @@ def get_fia_documents():
     )
 
 @app.route('/download-fia-doc', methods=['GET'])
+@require_api_key
 def download_document():
     url = request.args.get('url')
     if not url:
@@ -151,19 +186,22 @@ def download_document():
     try:
         response, filename = download_file(url=url)
         if response and filename:
-            return Response(
+            flask_response = Response(
                 response.iter_content(chunk_size=8192),
                 headers={
                     'Content-Disposition': f'attachment; filename="{filename}"',
                     'Content-Type': 'application/pdf'
                 }
             )
+            flask_response.call_on_close(response.close)
+            return flask_response
         else:
-            return jsonify({'error': 'Failed to download file'}), 500
+            return jsonify({'error': 'Only HTTPS documents hosted on fia.com are allowed'}), 400
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get-seasons-available', methods=['GET'])
+@require_api_key
 def get_seasons_available():
     """
     Get all available seasons from FIA documents page
@@ -172,7 +210,7 @@ def get_seasons_available():
         logger.info("STARTING SEASONS RETRIEVAL...\n")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(**BROWSER_LAUNCH_OPTIONS)
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
@@ -208,6 +246,7 @@ def get_seasons_available():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get-championships-available', methods=['GET'])
+@require_api_key
 def get_championships_available():
     """
     Get all available championships for a season
@@ -228,7 +267,7 @@ def get_championships_available():
         logger.info("")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(**BROWSER_LAUNCH_OPTIONS)
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
@@ -271,6 +310,7 @@ def get_championships_available():
         return jsonify({'error': str(e)}), 500
 
 @app.route('/get-gp-available', methods=['GET'])
+@require_api_key
 def get_gp_available():
     """
     Get all available Grand Prix events for a season
@@ -291,7 +331,7 @@ def get_gp_available():
         logger.info("")
         
         with sync_playwright() as p:
-            browser = p.chromium.launch(headless=True)
+            browser = p.chromium.launch(**BROWSER_LAUNCH_OPTIONS)
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
