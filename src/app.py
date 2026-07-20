@@ -31,6 +31,19 @@ BROWSER_LAUNCH_OPTIONS = {
     # shared-memory files under /tmp avoids renderer crashes on document pages.
     'args': ['--disable-dev-shm-usage']
 }
+FIA_PAGE_READY_TIMEOUT_MS = 15_000
+
+def open_fia_documents_page(page) -> None:
+    """Open the FIA page and wait for the form actually used by the scraper."""
+    page.goto(
+        FIA_DOCUMENTS_URL,
+        wait_until='domcontentloaded',
+        timeout=30_000
+    )
+    page.locator('.select-field-wrapper select').first.wait_for(
+        state='visible',
+        timeout=FIA_PAGE_READY_TIMEOUT_MS
+    )
 
 def require_api_key(view_function):
     """Require the API key configured in the FIA_DOCS_API_KEY environment variable."""
@@ -109,9 +122,7 @@ def get_fia_documents():
         browser = p.chromium.launch(**BROWSER_LAUNCH_OPTIONS)
         page = browser.new_page()
 
-        page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
-
-        page.wait_for_selector('.select-field-wrapper')
+        open_fia_documents_page(page)
 
         # Select options in order
         logger.info("STARTING SELECTIONS...\n")
@@ -132,8 +143,7 @@ def get_fia_documents():
                 logger.info(f"Season {season} not available, reloading page and trying fallback: {fallback_season}\n")
                 
                 # Reload the page
-                page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
-                page.wait_for_selector('.select-field-wrapper')
+                open_fia_documents_page(page)
                 
                 # Try with previous year
                 season_selected = select_option_by_type(page=page, select_field_name=SELECT_FIELD_SEASON_DEFAULT_VALUE, option_text=fallback_season)
@@ -141,9 +151,6 @@ def get_fia_documents():
                 if season_selected:
                     season = fallback_season
                     logger.info(f"Successfully selected fallback season: {fallback_season}\n")
-                    # Wait for page to stabilize after fallback selection (navigation may occur)
-                    page.wait_for_selector('.select-field-wrapper', timeout=1000)
-                    page.wait_for_timeout(500)  # Additional wait for page to be fully ready
                 else:
                     logger.error(f"Failed to select both {season} and fallback {fallback_season}\n")
 
@@ -214,8 +221,7 @@ def get_seasons_available():
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
-            page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
-            page.wait_for_selector('.select-field-wrapper')
+            open_fia_documents_page(page)
             
             # Get available seasons
             logger.info("EXTRACTING AVAILABLE SEASONS...\n")
@@ -271,8 +277,7 @@ def get_championships_available():
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
-            page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
-            page.wait_for_selector('.select-field-wrapper')
+            open_fia_documents_page(page)
             
             # Select season if provided
             if season:
@@ -335,8 +340,7 @@ def get_gp_available():
             page = browser.new_page()
             
             logger.info("NAVIGATING TO FIA DOCUMENTS PAGE...")
-            page.goto(FIA_DOCUMENTS_URL, wait_until='networkidle')
-            page.wait_for_selector('.select-field-wrapper')
+            open_fia_documents_page(page)
             
             # Select season if provided
             if season:

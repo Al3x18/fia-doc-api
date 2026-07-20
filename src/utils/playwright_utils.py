@@ -1,10 +1,18 @@
 import logging
+import re
 import requests
-from urllib.parse import urlparse
+from urllib.parse import urljoin, urlparse
 from datetime import datetime
+from playwright.sync_api import Error as PlaywrightError
 
 # Configure logging
 logger = logging.getLogger(__name__)
+
+FIA_NAVIGATION_TIMEOUT_MS = 15_000
+NEXT_SELECT_FIELD = {
+    "Season": "Championship",
+    "Championship": "Event",
+}
 
 def is_allowed_fia_url(url: str) -> bool:
     """Return True only for HTTPS URLs hosted by fia.com or one of its subdomains."""
@@ -42,6 +50,28 @@ def normalize_season_format(season_input):
     # Otherwise return as is (might be a different format we don't know)
     return season_input
 
+def _get_select_locator(*, page, select_field_name):
+    """Locate a FIA select by the text of its placeholder option."""
+    placeholder_text = re.compile(rf"^\s*{re.escape(select_field_name)}\s*$")
+    placeholder = page.locator('option[value="0"]', has_text=placeholder_text)
+    return page.locator(".select-field-wrapper").filter(has=placeholder).locator("select")
+
+def _wait_for_page_after_selection(*, page, select_field_name) -> None:
+    """Wait until the content required after a FIA selection is ready."""
+    next_field_name = NEXT_SELECT_FIELD.get(select_field_name)
+    if next_field_name:
+        _get_select_locator(
+            page=page,
+            select_field_name=next_field_name
+        ).wait_for(state="visible", timeout=FIA_NAVIGATION_TIMEOUT_MS)
+        return
+
+    # Event is the last selection; its destination must expose the event title.
+    page.locator(".event-title.active").first.wait_for(
+        state="visible",
+        timeout=FIA_NAVIGATION_TIMEOUT_MS
+    )
+
 def select_option_by_type(*, page, select_field_name, option_text) -> bool:
     """
     Find and select from a specific select type on the FIA documents page.
@@ -55,29 +85,58 @@ def select_option_by_type(*, page, select_field_name, option_text) -> bool:
     Returns:
         bool: True if selection was successful, False otherwise
     """
+    select_locator = _get_select_locator(
+        page=page,
+        select_field_name=select_field_name
+    )
 
-    WAIT_UPLOAD_PAGE_TIME = 850
+    if select_locator.count() == 0:
+        logger.warning(f"Select field {select_field_name} was not found")
+        return False
 
-    select_wrappers = page.query_selector_all('.select-field-wrapper')
+    option_text_pattern = re.compile(rf"^\s*{re.escape(option_text)}\s*$")
+    matching_option = select_locator.locator(
+        "option",
+        has_text=option_text_pattern
+    )
+    if matching_option.count() == 0:
+        logger.warning(
+            f"Option {option_text} was not found in {select_field_name}"
+        )
+        return False
 
-    for wrapper in select_wrappers:
-        select_element = wrapper.query_selector('select')
+    logger.info(f"Selecting {option_text} in {select_field_name}\n")
 
-        if select_element:
-            # Get the first option text to identify which select this is
-            first_option = select_element.query_selector('option[value="0"]')
-            current_select_type = first_option.inner_text() if first_option else ""
+    try:
+        selected_values = select_locator.select_option(label=option_text)
+        if not selected_values or selected_values[0] == "0":
+            logger.warning(f"Option {option_text} was not selected in {select_field_name}")
+            return False
 
-            if current_select_type == select_field_name:
-                logger.info(f"Selecting {option_text} in {select_field_name}\n")
-                try:
-                    select_element.select_option(label=option_text)
-                    page.wait_for_timeout(WAIT_UPLOAD_PAGE_TIME)  # Wait for page to be ready
-                    return True
-                except Exception as e:
-                    logger.warning(f"Failed to select {option_text} in {select_field_name}: {e}")
-                    return False
-    return False
+        expected_url = urljoin(page.url, selected_values[0])
+        page.wait_for_url(
+            expected_url,
+            wait_until="domcontentloaded",
+            timeout=FIA_NAVIGATION_TIMEOUT_MS
+        )
+        _wait_for_page_after_selection(
+            page=page,
+            select_field_name=select_field_name
+        )
+        return True
+    except PlaywrightError as error:
+        logger.warning(
+            f"Failed to select {option_text} in {select_field_name}: {error}"
+        )
+        return False
+
+def _is_navigation_context_error(error: PlaywrightError) -> bool:
+    """Identify transient errors caused by a document being replaced."""
+    message = str(error).lower()
+    return (
+        "execution context was destroyed" in message
+        or "frame was detached" in message
+    )
 
 def get_select_options(*, page, select_field_name) -> list[str]:
     """
@@ -90,31 +149,43 @@ def get_select_options(*, page, select_field_name) -> list[str]:
     Returns:
         list[str]: List of available option texts (excluding the default option)
     """
-    select_wrappers = page.query_selector_all('.select-field-wrapper')
-    
-    for wrapper in select_wrappers:
-        select_element = wrapper.query_selector('select')
-        
-        if select_element:
-            # Get the first option text to identify which select this is
-            first_option = select_element.query_selector('option[value="0"]')
-            current_select_type = first_option.inner_text() if first_option else ""
-            
-            if current_select_type == select_field_name:
-                # Get all options except the first one (default option)
-                options = select_element.query_selector_all('option')
-                available_options = []
-                
-                for option in options:
-                    option_value = option.get_attribute('value')
-                    option_text = option.inner_text().strip()
-                    
-                    # Skip the default option (value="0") and empty options
-                    if option_value != "0" and option_text:
-                        available_options.append(option_text)
-                
-                return available_options
-    
+    for attempt in range(2):
+        try:
+            select_locator = _get_select_locator(
+                page=page,
+                select_field_name=select_field_name
+            )
+            if select_locator.count() == 0:
+                return []
+
+            select_locator.wait_for(
+                state="visible",
+                timeout=FIA_NAVIGATION_TIMEOUT_MS
+            )
+            options = select_locator.locator('option:not([value="0"])')
+            option_rows = options.evaluate_all(
+                """elements => elements.map(option => ({
+                    value: option.value,
+                    text: (option.textContent || '').trim()
+                }))"""
+            )
+            return [
+                option["text"]
+                for option in option_rows
+                if option["value"] and option["text"]
+            ]
+        except PlaywrightError as error:
+            if attempt == 1 or not _is_navigation_context_error(error):
+                raise
+
+            logger.info(
+                f"DOM changed while reading {select_field_name}; retrying once"
+            )
+            page.wait_for_load_state(
+                "domcontentloaded",
+                timeout=FIA_NAVIGATION_TIMEOUT_MS
+            )
+
     return []
 
 def get_available_seasons(*, page) -> list[str]:
@@ -176,22 +247,29 @@ def get_docs(*, page) -> list[dict]:
         list: List with single object containing info and docs
     """
 
-    # Get GP Name from event-title CSS selector
-    gp_name = page.query_selector(".event-title").inner_text()
+    # Locators are resolved against the current DOM and remain safe after navigation.
+    gp_name = page.locator(".event-title.active").first.inner_text()
 
-    # Get Season Year from form-type-select CSS selector
-    season_year = page.query_selector_all(".form-type-select")[0].query_selector("select option").inner_text().split(' ')[1]
+    season_text = (
+        page.locator(".form-type-select")
+        .nth(0)
+        .locator("select option")
+        .first
+        .inner_text()
+    )
+    season_year = season_text.split(' ')[1]
 
     # Create the docs list for all documents
     docs_list = []
 
     # Find all document list items within ul.document-row-wrapper
-    document_items = page.query_selector_all('ul.document-row-wrapper li')
+    document_items = page.locator('ul.document-row-wrapper li')
 
-    for item in document_items:
+    for index in range(document_items.count()):
+        item = document_items.nth(index)
         # Get the href attribute from the link
-        link_element = item.query_selector('a')
-        href = link_element.get_attribute('href') if link_element else ""
+        link_element = item.locator('a').first
+        href = link_element.get_attribute('href') if link_element.count() else ""
 
         # Convert relative URL to absolute URL
         if href and href.startswith('/'):
@@ -200,12 +278,16 @@ def get_docs(*, page) -> list[dict]:
             url = href
 
         # Get title from div with class 'title'
-        title_element = item.query_selector('div.title')
-        title = title_element.inner_text().strip() if title_element else ""
+        title_element = item.locator('div.title').first
+        title = title_element.inner_text().strip() if title_element.count() else ""
 
         # Get published date from div with class 'published'
-        published_element = item.query_selector('div.published')
-        published_raw = published_element.inner_text().strip() if published_element else ""
+        published_element = item.locator('div.published').first
+        published_raw = (
+            published_element.inner_text().strip()
+            if published_element.count()
+            else ""
+        )
 
         # Convert to ISO format
         date = convert_fia_date_to_iso(date_text=published_raw)
