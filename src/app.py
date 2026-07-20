@@ -92,7 +92,7 @@ def api_documentation():
                          title="FIA Documents API",
                          version=get_server_version(),
                          description="API for retrieving and downloading FIA Formula 1 documents",
-                            base_url="http://localhost:4050/")
+                         base_url=request.url_root.rstrip('/'))
 
 @app.route('/health', methods=['GET'])
 def health_check():

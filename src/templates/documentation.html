@@ -2,832 +2,535 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title }} - API Documentation</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="{{ description }}">
+    <title>{{ title }} — API Reference</title>
+    <link rel="icon"
+        href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cpath fill='%23ff334f' d='M11 15h42l-5 8H8zm-5 14h36l-5 8H3zm-3 14h26l-5 8H0z'/%3E%3C/svg%3E">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 
 <body>
-    <div class="container">
-        <header>
-            <h1>{{ title }}</h1>
-            <p>{{ description }}</p>
-            <span class="version">v{{ version }}</span>
+    <a class="skip-link" href="#main-content">Skip to documentation</a>
+
+    <div class="site-shell">
+        <header class="topbar">
+            <a class="brand" href="#overview" aria-label="{{ title }} home">
+                <span class="brand-mark" aria-hidden="true">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </span>
+                <span class="brand-copy">
+                    <strong>FIA DOCS</strong>
+                    <small>FORMULA 1 API</small>
+                </span>
+            </a>
+
+            <div class="topbar-meta">
+                <span class="runtime-status">
+                    <i aria-hidden="true"></i>
+                    Documentation online
+                </span>
+                <span class="version">v{{ version }}</span>
+            </div>
         </header>
 
-        <main>
-            <section>
-                <h2>Overview</h2>
-                <p>This API provides automated access to official FIA Formula 1 documents by scraping the FIA website.
-                    It retrieves race classifications, penalties, technical regulations, and other official race
-                    documents.</p>
+        <div class="page-grid">
+            <aside class="sidebar">
+                <nav aria-label="Documentation sections">
+                    <p class="nav-label">Start here</p>
+                    <a href="#overview">Overview</a>
+                    <a href="#authentication">Authentication</a>
+                    <a href="#workflow">Workflow</a>
 
-                <div class="info-box">
-                    <h3>Key Features</h3>
-                    <ul>
-                        <li><strong>Real-time scraping</strong> of the official FIA documents portal</li>
-                        <li><strong>Automatic data formatting</strong> (dates converted to ISO format, URLs made
-                            absolute)</li>
-                        <li><strong>Direct document downloads</strong> without server-side storage</li>
-                        <li><strong>Flexible filtering</strong> by season, championship, and event</li>
-                        <li><strong>Discovery endpoints</strong> to explore available seasons, championships, and events</li>
-                        <li><strong>Track image delivery</strong> by circuit name from local <code>f1Tracks</code> assets</li>
-                        <li><strong>Automatic season normalization</strong> for easier parameter handling</li>
-                    </ul>
+                    <p class="nav-label">Discovery</p>
+                    <a href="#get-seasons">Seasons</a>
+                    <a href="#get-championships">Championships</a>
+                    <a href="#get-events">Events</a>
+
+                    <p class="nav-label">Resources</p>
+                    <a href="#get-documents">FIA documents</a>
+                    <a href="#download-document">Document download</a>
+                    <a href="#track-image">Track image</a>
+
+                    <p class="nav-label">Reference</p>
+                    <a href="#errors">Errors</a>
+                    <a href="#operational-notes">Operational notes</a>
+                </nav>
+
+                <div class="sidebar-note">
+                    <span class="eyebrow">Static reference</span>
+                    <p>This page never calls protected endpoints and never asks for an API key.</p>
                 </div>
-            </section>
+            </aside>
 
-            <section>
-                <h2>Quick Start</h2>
-                <ol>
-                    <li><strong>Explore Available Data:</strong> Use the discovery endpoints to see what's available:
-                        <ul>
-                            <li><code>GET /get-seasons-available</code> - List all available seasons</li>
-                            <li><code>GET /get-gp-available</code> - List all Grand Prix events for a season</li>
-                        </ul>
-                    </li>
-                    <li><strong>Get Documents:</strong> Call <code>GET /fia-documents</code> to retrieve available
-                        documents for the current season</li>
-                    <li><strong>Find Your Document:</strong> Browse the returned list and copy the <code>url</code>
-                        field of your desired document</li>
-                    <li><strong>Download:</strong> Use <code>GET /download-fia-doc?url={document_url}</code> to download
-                        the PDF file</li>
-                    <li><strong>Track Image (Optional):</strong> Use <code>GET /track-image?track_name={circuit_name}</code>
-                        to retrieve the circuit PNG</li>
-                </ol>
-            </section>
+            <main id="main-content">
+                <section class="hero" id="overview">
+                    <div class="hero-copy">
+                        <p class="kicker"><span>API REFERENCE</span> / FORMULA 1 DOCUMENTS</p>
+                        <h1>Official FIA documents,<br><em>structured for developers.</em></h1>
+                        <p class="hero-lead">{{ description }} Discover seasons and events, retrieve race documents,
+                            stream official PDFs, and serve circuit artwork from one focused REST API.</p>
 
-            <section>
-                <h2>Authentication</h2>
-                <p>The scraping, discovery, and document-download endpoints require an API key in every request:</p>
-                <pre><code>X-API-Key: your-api-key</code></pre>
-                <div class="example-box">
-                    <p><strong>Example:</strong></p>
-                    <code>curl -H "X-API-Key: your-api-key" https://your-service.up.railway.app/fia-documents</code>
-                </div>
-                <p>The documentation, health check, and <code>/track-image</code> endpoints are public.</p>
-            </section>
-
-            <section>
-                <h2>API Endpoints</h2>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/</code>
-                        <button class="btn" onclick="copyToClipboard('/')">Copy</button>
-                    </div>
-                    <p><strong>Purpose:</strong> Returns this interactive documentation page</p>
-                    <p><strong>Response:</strong> HTML page with complete API documentation and testing interface</p>
-                </div>
-
-                <!-- Discovery Endpoints Section -->
-                <h3>Discovery Endpoints</h3>
-                <p>These endpoints help you explore what data is available before making specific document requests.</p>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/get-seasons-available</code>
-                        <button class="btn" onclick="copyToClipboard('/get-seasons-available')">Copy</button>
+                        <div class="hero-badges" aria-label="API characteristics">
+                            <span><i class="dot dot-red"></i>REST / JSON</span>
+                            <span><i class="dot dot-blue"></i>Flask + Playwright</span>
+                            <span><i class="dot dot-green"></i>HTTPS</span>
+                        </div>
                     </div>
 
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint retrieves all available Formula 1 seasons from the FIA documents portal. It's useful for:</p>
-                    <ul>
-                        <li>Discovering which years have data available</li>
-                        <li>Building season selection dropdowns in applications</li>
-                        <li>Understanding the historical range of available documents</li>
-                        <li>Planning data collection for specific time periods</li>
-                    </ul>
+                    <div class="hero-panel">
+                        <div class="hero-panel-head">
+                            <span>BASE URL</span>
+                            <span class="environment">PRODUCTION</span>
+                        </div>
+                        <code class="base-url">{{ base_url }}</code>
+                        <dl class="service-facts">
+                            <div>
+                                <dt>Format</dt>
+                                <dd>JSON / Binary</dd>
+                            </div>
+                            <div>
+                                <dt>Auth</dt>
+                                <dd>X-API-Key</dd>
+                            </div>
+                            <div>
+                                <dt>Version</dt>
+                                <dd>{{ version }}</dd>
+                            </div>
+                            <div>
+                                <dt>Source</dt>
+                                <dd>fia.com</dd>
+                            </div>
+                        </dl>
+                    </div>
+                </section>
 
-                    <h3>No Parameters Required</h3>
-                    <p>This endpoint doesn't require any parameters. It returns all seasons available on the FIA website.</p>
-
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Get all available seasons:</strong></p>
-                        <code>GET /get-seasons-available</code>
+                <section class="section-block">
+                    <div class="section-heading">
+                        <span class="section-index">01</span>
+                        <div>
+                            <p class="eyebrow">Capabilities</p>
+                            <h2>A narrow API with a complete document workflow.</h2>
+                        </div>
                     </div>
 
-                    <h3>Response Structure</h3>
-                    <pre><code>{
+                    <div class="feature-grid">
+                        <article class="feature-card">
+                            <span class="feature-number">01</span>
+                            <h3>Discover</h3>
+                            <p>Resolve available seasons, championships, and Grand Prix names before requesting
+                                documents.</p>
+                        </article>
+                        <article class="feature-card">
+                            <span class="feature-number">02</span>
+                            <h3>Retrieve</h3>
+                            <p>Scrape FIA metadata in real time with normalized dates and absolute document URLs.</p>
+                        </article>
+                        <article class="feature-card">
+                            <span class="feature-number">03</span>
+                            <h3>Deliver</h3>
+                            <p>Stream FIA PDFs and local track PNG assets without storing generated files.</p>
+                        </article>
+                    </div>
+                </section>
+
+                <section class="section-block" id="authentication">
+                    <div class="section-heading">
+                        <span class="section-index">02</span>
+                        <div>
+                            <p class="eyebrow">Security</p>
+                            <h2>Authentication</h2>
+                        </div>
+                    </div>
+
+                    <div class="auth-layout">
+                        <div>
+                            <p class="section-intro">Protected endpoints require a server-configured API key in the
+                                <code>X-API-Key</code> request header. The expected value is stored by the service in
+                                <code>FIA_DOCS_API_KEY</code>.
+                            </p>
+
+                            <div class="callout callout-security">
+                                <span class="callout-icon" aria-hidden="true">!</span>
+                                <div>
+                                    <strong>Keep credentials out of browser code.</strong>
+                                    <p>Do not embed the API key in a public website. Send protected requests from a
+                                        trusted backend or controlled client. This documentation page contains no key,
+                                        JavaScript, or live API console.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="code-window">
+                            <div class="code-title">
+                                <span>REQUEST HEADER</span>
+                                <i></i>
+                            </div>
+                            <pre><code>X-API-Key: $FIA_DOCS_API_KEY</code></pre>
+                        </div>
+                    </div>
+
+                    <div class="access-grid">
+                        <div class="access-card">
+                            <span class="access-tag protected">PROTECTED</span>
+                            <ul>
+                                <li>/get-seasons-available</li>
+                                <li>/get-championships-available</li>
+                                <li>/get-gp-available</li>
+                                <li>/fia-documents</li>
+                                <li>/download-fia-doc</li>
+                            </ul>
+                        </div>
+                        <div class="access-card">
+                            <span class="access-tag public">PUBLIC</span>
+                            <ul>
+                                <li>/</li>
+                                <li>/health</li>
+                                <li>/track-image</li>
+                            </ul>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="section-block" id="workflow">
+                    <div class="section-heading">
+                        <span class="section-index">03</span>
+                        <div>
+                            <p class="eyebrow">Recommended sequence</p>
+                            <h2>From season to document in four steps.</h2>
+                        </div>
+                    </div>
+
+                    <ol class="workflow">
+                        <li>
+                            <span>1</span>
+                            <div>
+                                <strong>Discover the season</strong>
+                                <code>GET /get-seasons-available</code>
+                            </div>
+                        </li>
+                        <li>
+                            <span>2</span>
+                            <div>
+                                <strong>Resolve the event name</strong>
+                                <code>GET /get-gp-available?season=2025</code>
+                            </div>
+                        </li>
+                        <li>
+                            <span>3</span>
+                            <div>
+                                <strong>Retrieve document metadata</strong>
+                                <code>GET /fia-documents?season=SEASON 2025&amp;event=Abu Dhabi Grand Prix</code>
+                            </div>
+                        </li>
+                        <li>
+                            <span>4</span>
+                            <div>
+                                <strong>Stream the selected PDF</strong>
+                                <code>GET /download-fia-doc?url={fia_document_url}</code>
+                            </div>
+                        </li>
+                    </ol>
+                </section>
+
+                <section class="section-block endpoint-catalog">
+                    <div class="section-heading">
+                        <span class="section-index">04</span>
+                        <div>
+                            <p class="eyebrow">Endpoint catalog</p>
+                            <h2>Discovery</h2>
+                        </div>
+                    </div>
+
+                    <article class="endpoint-card" id="get-seasons">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/get-seasons-available</code>
+                            </div>
+                            <span class="access-tag protected">PROTECTED</span>
+                        </header>
+                        <p>Returns every season currently exposed by the FIA document portal.</p>
+
+                        <div class="endpoint-grid">
+                            <div>
+                                <h3>Parameters</h3>
+                                <div class="empty-state">No query parameters.</div>
+                            </div>
+                            <div>
+                                <h3>Response fields</h3>
+                                <dl class="field-list">
+                                    <div><dt>message</dt><dd>string</dd></div>
+                                    <div><dt>count</dt><dd>integer</dd></div>
+                                    <div><dt>seasons</dt><dd>string[]</dd></div>
+                                </dl>
+                            </div>
+                        </div>
+
+                        <div class="code-window">
+                            <div class="code-title"><span>EXAMPLE RESPONSE</span><i></i></div>
+                            <pre><code>{
   "message": "Available seasons retrieved",
-  "count": 10,
-  "seasons": [
-    "SEASON 2025",
-    "SEASON 2024", 
-    "SEASON 2023",
-    "SEASON 2022",
-    "SEASON 2021",
-    "SEASON 2020",
-    "SEASON 2019",
-    "SEASON 2018",
-    "SEASON 2017",
-    "SEASON 2016"
-  ]
+  "count": 3,
+  "seasons": ["SEASON 2026", "SEASON 2025", "SEASON 2024"]
 }</code></pre>
+                        </div>
+                    </article>
 
-                    <h3>Response Fields Explained</h3>
-                    <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>message</code></td>
-                            <td>string</td>
-                            <td>Status message indicating successful retrieval</td>
-                        </tr>
-                        <tr>
-                            <td><code>count</code></td>
-                            <td>number</td>
-                            <td>Total number of available seasons</td>
-                        </tr>
-                        <tr>
-                            <td><code>seasons</code></td>
-                            <td>array</td>
-                            <td>Array of season strings in FIA format (e.g., "SEASON 2024")</td>
-                        </tr>
-                    </table>
-
-                    <div class="note-box">
-                        <h4>Season Format</h4>
-                        <p>All seasons are returned in the format <code>"SEASON YYYY"</code>. This is the exact format expected by other endpoints when specifying a season parameter.</p>
-                    </div>
-                </div>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/get-championships-available</code>
-                        <button class="btn" onclick="copyToClipboard('/get-championships-available')">Copy</button>
-                    </div>
-
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint retrieves all available championships for a specific season. It's useful for:</p>
-                    <ul>
-                        <li>Discovering which championships are available for a given year</li>
-                        <li>Understanding the different series that FIA manages</li>
-                        <li>Building championship selection interfaces</li>
-                        <li>Exploring historical championship data</li>
-                    </ul>
-
-                    <h3>Query Parameters (Optional)</h3>
-                    <table>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Type</th>
-                            <th>Required</th>
-                            <th>Description</th>
-                            <th>Example</th>
-                        </tr>
-                        <tr>
-                            <td><code>season</code></td>
-                            <td>string</td>
-                            <td>❌ No</td>
-                            <td>Season to get championships for. If not provided, uses current default selection</td>
-                            <td><code>?season=SEASON 2024</code></td>
-                        </tr>
-                    </table>
-
-                    <h3>Season Parameter Flexibility</h3>
-                    <p>The <code>season</code> parameter accepts multiple formats:</p>
-                    <ul>
-                        <li><strong>Full format:</strong> <code>SEASON 2024</code></li>
-                        <li><strong>Year only:</strong> <code>2024</code> (automatically converted to <code>SEASON 2024</code>)</li>
-                        <li><strong>No parameter:</strong> Uses the current default season selection</li>
-                    </ul>
-
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Get championships for current default season:</strong></p>
-                        <code>GET /get-championships-available</code>
-
-                        <p><strong>Get championships for specific season (full format):</strong></p>
-                        <code>GET /get-championships-available?season=SEASON 2024</code>
-
-                        <p><strong>Get championships for specific season (year only):</strong></p>
-                        <code>GET /get-championships-available?season=2024</code>
-                    </div>
-
-                    <h3>Response Structure</h3>
-                    <pre><code>{
-  "message": "Available championships retrieved",
-  "season": "SEASON 2024",
-  "count": 1,
-  "championships": [
-    "FIA Formula One World Championship"
-  ]
-}</code></pre>
-
-                    <h3>Response Fields Explained</h3>
-                    <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>message</code></td>
-                            <td>string</td>
-                            <td>Status message indicating successful retrieval</td>
-                        </tr>
-                        <tr>
-                            <td><code>season</code></td>
-                            <td>string</td>
-                            <td>The season that was queried (or "default" if no season specified)</td>
-                        </tr>
-                        <tr>
-                            <td><code>count</code></td>
-                            <td>number</td>
-                            <td>Total number of available championships for the specified season</td>
-                        </tr>
-                        <tr>
-                            <td><code>championships</code></td>
-                            <td>array</td>
-                            <td>Array of championship names available for the specified season</td>
-                        </tr>
-                    </table>
-
-                    <div class="note-box">
-                        <h4>Championship Availability</h4>
-                        <p>Most seasons typically have only "FIA Formula One World Championship" available, as this API focuses on Formula 1 documents. Other championships may be available for different years.</p>
-                    </div>
-                </div>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/get-gp-available</code>
-                        <button class="btn" onclick="copyToClipboard('/get-gp-available')">Copy</button>
-                    </div>
-
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint retrieves all available Grand Prix events for a specific season. It's useful for:</p>
-                    <ul>
-                        <li>Discovering which Grand Prix events took place in a given season</li>
-                        <li>Building event selection interfaces for applications</li>
-                        <li>Understanding the F1 calendar for different years</li>
-                        <li>Planning document retrieval for specific events</li>
-                        <li>Exploring historical race calendars</li>
-                    </ul>
-
-                    <h3>Query Parameters (Optional)</h3>
-                    <table>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Type</th>
-                            <th>Required</th>
-                            <th>Description</th>
-                            <th>Example</th>
-                        </tr>
-                        <tr>
-                            <td><code>season</code></td>
-                            <td>string</td>
-                            <td>❌ No</td>
-                            <td>Season to get Grand Prix events for. If not provided, uses current default selection</td>
-                            <td><code>?season=SEASON 2024</code></td>
-                        </tr>
-                    </table>
-
-                    <h3>Season Parameter Flexibility</h3>
-                    <p>The <code>season</code> parameter accepts multiple formats:</p>
-                    <ul>
-                        <li><strong>Full format:</strong> <code>SEASON 2024</code></li>
-                        <li><strong>Year only:</strong> <code>2024</code> (automatically converted to <code>SEASON 2024</code>)</li>
-                        <li><strong>No parameter:</strong> Uses the current default season selection</li>
-                    </ul>
-
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Get Grand Prix events for current default season:</strong></p>
-                        <code>GET /get-gp-available</code>
-
-                        <p><strong>Get Grand Prix events for specific season (full format):</strong></p>
-                        <code>GET /get-gp-available?season=SEASON 2024</code>
-
-                        <p><strong>Get Grand Prix events for specific season (year only):</strong></p>
-                        <code>GET /get-gp-available?season=2024</code>
-
-                        <p><strong>Get Grand Prix events for historical season:</strong></p>
-                        <code>GET /get-gp-available?season=2020</code>
-                    </div>
-
-                    <h3>Response Structure</h3>
-                    <pre><code>{
-  "message": "Available Grand Prix events retrieved",
-  "season": "SEASON 2024",
-  "count": 24,
-  "events": [
-    "Bahrain Grand Prix",
-    "Saudi Arabian Grand Prix",
-    "Australian Grand Prix",
-    "Japanese Grand Prix",
-    "Chinese Grand Prix",
-    "Miami Grand Prix",
-    "Emilia Romagna Grand Prix",
-    "Monaco Grand Prix",
-    "Canadian Grand Prix",
-    "Spanish Grand Prix",
-    "Austrian Grand Prix",
-    "British Grand Prix",
-    "Hungarian Grand Prix",
-    "Belgian Grand Prix",
-    "Dutch Grand Prix",
-    "Italian Grand Prix",
-    "Azerbaijan Grand Prix",
-    "Singapore Grand Prix",
-    "United States Grand Prix",
-    "Mexico City Grand Prix",
-    "Brazilian Grand Prix",
-    "Las Vegas Grand Prix",
-    "Qatar Grand Prix",
-    "Abu Dhabi Grand Prix"
-  ]
-}</code></pre>
-
-                    <h3>Response Fields Explained</h3>
-                    <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>message</code></td>
-                            <td>string</td>
-                            <td>Status message indicating successful retrieval</td>
-                        </tr>
-                        <tr>
-                            <td><code>season</code></td>
-                            <td>string</td>
-                            <td>The season that was queried (or "default" if no season specified)</td>
-                        </tr>
-                        <tr>
-                            <td><code>count</code></td>
-                            <td>number</td>
-                            <td>Total number of Grand Prix events for the specified season</td>
-                        </tr>
-                        <tr>
-                            <td><code>events</code></td>
-                            <td>array</td>
-                            <td>Array of Grand Prix event names for the specified season</td>
-                        </tr>
-                    </table>
-
-                    <div class="note-box">
-                        <h4>Event Ordering</h4>
-                        <p>Events are typically returned in chronological order as they occurred during the season. This helps applications display events in the correct sequence.</p>
-                    </div>
-
-                    <div class="note-box">
-                        <h4>Season Variations</h4>
-                        <p>Different seasons may have different numbers of events. For example:
-                        <ul>
-                            <li><strong>2024:</strong> 24 Grand Prix events</li>
-                            <li><strong>2023:</strong> 23 Grand Prix events</li>
-                            <li><strong>2020:</strong> 17 Grand Prix events (COVID-19 affected season)</li>
-                        </ul>
+                    <article class="endpoint-card" id="get-championships">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/get-championships-available</code>
+                            </div>
+                            <span class="access-tag protected">PROTECTED</span>
+                        </header>
+                        <p>Returns FIA championships available for a season. A year-only value is normalized to
+                            <code>SEASON YYYY</code>.
                         </p>
-                    </div>
-                </div>
 
-                <!-- Document Retrieval Endpoints Section -->
-                <h3>Document Retrieval Endpoints</h3>
-                <p>These endpoints retrieve actual FIA documents and metadata.</p>
+                        <div class="parameter-table" role="table" aria-label="Championship parameters">
+                            <div class="parameter-head" role="row">
+                                <span>Parameter</span><span>Type</span><span>Required</span><span>Description</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>season</code><span>string</span><span>No</span><span>Full season label or
+                                    four-digit year.</span>
+                            </div>
+                        </div>
 
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/fia-documents</code>
-                        <button class="btn" onclick="copyToClipboard('/fia-documents')">Copy</button>
-                    </div>
+                        <div class="code-window compact">
+                            <div class="code-title"><span>REQUEST PATH</span><i></i></div>
+                            <pre><code>/get-championships-available?season=2025</code></pre>
+                        </div>
+                    </article>
 
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint performs real-time web scraping of the official FIA documents portal at
-                        <code>fia.com/documents</code>. It:</p>
-                    <ul>
-                        <li>Opens the FIA documents page using a headless browser (Playwright)</li>
-                        <li>Automatically selects filters for season, championship, and event</li>
-                        <li>Extracts all available document metadata from the results page</li>
-                        <li>Converts dates from FIA format to ISO 8601 standard</li>
-                        <li>Converts relative URLs to absolute download links</li>
-                        <li>Returns structured JSON data ready for consumption</li>
-                    </ul>
+                    <article class="endpoint-card" id="get-events">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/get-gp-available</code>
+                            </div>
+                            <span class="access-tag protected">PROTECTED</span>
+                        </header>
+                        <p>Returns event names accepted by the document endpoint for the selected season.</p>
 
-                    <h3>Query Parameters (Optional)</h3>
-                    <table>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Default Value</th>
-                            <th>Description</th>
-                            <th>Example</th>
-                        </tr>
-                        <tr>
-                            <td><code>season</code></td>
-                            <td>Current year</td>
-                            <td>F1 season year to filter by</td>
-                            <td><code>?season=SEASON 2024</code></td>
-                        </tr>
-                        <tr>
-                            <td><code>championship</code></td>
-                            <td>FIA Formula One World Championship</td>
-                            <td>Championship type (usually keep default)</td>
-                            <td><code>?championship=FIA Formula One World Championship</code></td>
-                        </tr>
-                        <tr>
-                            <td><code>event</code></td>
-                            <td>(empty)</td>
-                            <td>Specific Grand Prix name. If empty, returns latest event documents</td>
-                            <td><code>?event=Belgian Grand Prix</code></td>
-                        </tr>
-                    </table>
+                        <div class="parameter-table" role="table" aria-label="Event parameters">
+                            <div class="parameter-head" role="row">
+                                <span>Parameter</span><span>Type</span><span>Required</span><span>Description</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>season</code><span>string</span><span>No</span><span>Full season label or
+                                    four-digit year.</span>
+                            </div>
+                        </div>
 
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Get latest documents:</strong></p>
-                        <code>GET /fia-documents</code>
-
-                        <p><strong>Get documents for specific event:</strong></p>
-                        <code>GET /fia-documents?event=Monaco Grand Prix</code>
-
-                        <p><strong>Get documents from previous season:</strong></p>
-                        <code>GET /fia-documents?season=SEASON 2024</code>
-
-                        <p><strong>Get documents for specific event in specific season:</strong></p>
-                        <code>GET /fia-documents?season=SEASON 2024&event=Belgian Grand Prix</code>
-                    </div>
-
-                    <h3>Response Structure</h3>
-                    <pre><code>{
-  "message": "FIA documents retrieved",
-  "documents": [
-    {
-      "info": {
-        "season_year": "2025",
-        "gp_name": "Austrian Grand Prix",
-        "docs_count": 2
-      },
-      "docs": [
-        {
-          "title": "Doc 75 - Championship Points",
-          "published": "Published on 30.06.24 19:15 CET",
-          "date": "2024-06-30T19:15:00",
-          "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Championship Points.pdf"
-        },
-        {
-          "title": "Doc 74 - Final Race Classification",
-          "published": "Published on 30.06.24 19:13 CET",
-          "date": "2024-06-30T19:13:00",
-          "url": "https://www.fia.com/sites/default/files/decision-document/2024 Austrian Grand Prix - Final Race Classification.pdf"
-        }
-      ]
-    }
+                        <div class="code-window">
+                            <div class="code-title"><span>EXAMPLE RESPONSE</span><i></i></div>
+                            <pre><code>{
+  "message": "Available Grand Prix events retrieved",
+  "season": "2025",
+  "count": 3,
+  "events": [
+    "Abu Dhabi Grand Prix",
+    "Australian Grand Prix",
+    "Austrian Grand Prix"
   ]
 }</code></pre>
+                        </div>
+                    </article>
+                </section>
 
-                    <h3>Response Fields Explained</h3>
-                    <table>
-                        <tr>
-                            <th>Field</th>
-                            <th>Type</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>message</code></td>
-                            <td>string</td>
-                            <td>Status message indicating successful retrieval</td>
-                        </tr>
-                        <tr>
-                            <td><code>documents</code></td>
-                            <td>array</td>
-                            <td>Array containing a single object with event information and documents</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"><strong>Info Object (documents[0].info)</strong></td>
-                        </tr>
-                        <tr>
-                            <td><code>info.season_year</code></td>
-                            <td>string</td>
-                            <td>Season year extracted from the page (e.g., "2025")</td>
-                        </tr>
-                        <tr>
-                            <td><code>info.gp_name</code></td>
-                            <td>string</td>
-                            <td>Grand Prix event name (e.g., "Austrian Grand Prix")</td>
-                        </tr>
-                        <tr>
-                            <td><code>info.docs_count</code></td>
-                            <td>number</td>
-                            <td>Total number of documents found for this event</td>
-                        </tr>
-                        <tr>
-                            <td colspan="3"><strong>Documents Array (documents[0].docs)</strong></td>
-                        </tr>
-                        <tr>
-                            <td><code>docs[].title</code></td>
-                            <td>string</td>
-                            <td>Official document title as published by FIA</td>
-                        </tr>
-                        <tr>
-                            <td><code>docs[].published</code></td>
-                            <td>string</td>
-                            <td>Original FIA publication date format with timezone</td>
-                        </tr>
-                        <tr>
-                            <td><code>docs[].date</code></td>
-                            <td>string</td>
-                            <td>ISO 8601 formatted date for easier programmatic use</td>
-                        </tr>
-                        <tr>
-                            <td><code>docs[].url</code></td>
-                            <td>string</td>
-                            <td>Direct download URL for the PDF document</td>
-                        </tr>
-                    </table>
-
-                    <div class="note-box">
-                        <h4>Response Structure Notes</h4>
-                        <ul>
-                            <li><strong>Structured Organization:</strong> Information is clearly separated between event
-                                metadata (<code>info</code>) and documents (<code>docs</code>)</li>
-                            <li><strong>Single Event Focus:</strong> Each response contains documents for one specific
-                                event/Grand Prix</li>
-                            <li><strong>Document Count:</strong> The <code>docs_count</code> field shows the total
-                                number of documents without manual counting</li>
-                            <li><strong>Document Order:</strong> Documents in the <code>docs</code> array are usually
-                                sorted by publication time (newest first)</li>
-                            <li><strong>Field Ordering:</strong> JSON fields are ordered consistently with
-                                <code>info</code> appearing before <code>docs</code></li>
-                        </ul>
+                <section class="section-block endpoint-catalog">
+                    <div class="section-heading">
+                        <span class="section-index">05</span>
+                        <div>
+                            <p class="eyebrow">Endpoint catalog</p>
+                            <h2>Documents &amp; assets</h2>
+                        </div>
                     </div>
 
-                    <div class="note-box">
-                        <h4>Processing Time</h4>
-                        <p>This endpoint typically takes 3-8 seconds to respond as it performs real-time web scraping
-                            using a headless browser. The API waits for page loads and form submissions to complete.</p>
+                    <article class="endpoint-card endpoint-primary" id="get-documents">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/fia-documents</code>
+                            </div>
+                            <span class="access-tag protected">PROTECTED</span>
+                        </header>
+                        <p>Runs the FIA scraper and returns normalized document metadata for one event. When
+                            <code>event</code> is omitted, the most recent available event is used.
+                        </p>
+
+                        <div class="parameter-table four-columns" role="table" aria-label="Document parameters">
+                            <div class="parameter-head" role="row">
+                                <span>Parameter</span><span>Default</span><span>Required</span><span>Description</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>season</code><span>Current year</span><span>No</span><span>Season label.</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>championship</code><span>Formula One</span><span>No</span><span>FIA championship
+                                    name.</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>event</code><span>Latest</span><span>No</span><span>Exact event name.</span>
+                            </div>
+                        </div>
+
+                        <div class="code-window">
+                            <div class="code-title"><span>EXAMPLE RESPONSE</span><i></i></div>
+                            <pre><code>{
+  "message": "FIA documents retrieved",
+  "documents": [{
+    "info": {
+      "season_year": "2025",
+      "gp_name": "ABU DHABI GRAND PRIX",
+      "docs_count": 56
+    },
+    "docs": [{
+      "title": "Doc 56 - Championship Points",
+      "published": "Published on 07.12.25 17:35 CET",
+      "date": "2025-12-07T17:35:00",
+      "url": "https://www.fia.com/system/files/decision-document/..."
+    }]
+  }]
+}</code></pre>
+                        </div>
+
+                        <div class="metric-strip">
+                            <div><strong>3–8s</strong><span>Typical scrape</span></div>
+                            <div><strong>ISO 8601</strong><span>Normalized dates</span></div>
+                            <div><strong>Real time</strong><span>No persistence</span></div>
+                        </div>
+                    </article>
+
+                    <article class="endpoint-card" id="download-document">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/download-fia-doc</code>
+                            </div>
+                            <span class="access-tag protected">PROTECTED</span>
+                        </header>
+                        <p>Streams a PDF from an approved <code>fia.com</code> HTTPS URL. Redirect destinations are
+                            validated and external hosts are rejected.</p>
+
+                        <div class="parameter-table" role="table" aria-label="Download parameters">
+                            <div class="parameter-head" role="row">
+                                <span>Parameter</span><span>Type</span><span>Required</span><span>Description</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>url</code><span>URL</span><span>Yes</span><span>FIA document URL returned by
+                                    <code>/fia-documents</code>.</span>
+                            </div>
+                        </div>
+
+                        <div class="response-meta">
+                            <span><strong>200</strong> application/pdf</span>
+                            <span>Content-Disposition: attachment</span>
+                        </div>
+                    </article>
+
+                    <article class="endpoint-card" id="track-image">
+                        <header class="endpoint-title">
+                            <div>
+                                <span class="method">GET</span>
+                                <code>/track-image</code>
+                            </div>
+                            <span class="access-tag public">PUBLIC</span>
+                        </header>
+                        <p>Returns a matching circuit PNG from the local track asset library. Matching is
+                            case-insensitive and separator tolerant.</p>
+
+                        <div class="parameter-table" role="table" aria-label="Track image parameters">
+                            <div class="parameter-head" role="row">
+                                <span>Parameter</span><span>Type</span><span>Required</span><span>Description</span>
+                            </div>
+                            <div class="parameter-row" role="row">
+                                <code>track_name</code><span>string</span><span>Yes</span><span>Circuit name, for
+                                    example <code>Suzuka Circuit</code>.</span>
+                            </div>
+                        </div>
+
+                        <div class="response-meta">
+                            <span><strong>200</strong> image/png</span>
+                            <span>No API key required</span>
+                        </div>
+                    </article>
+                </section>
+
+                <section class="section-block" id="errors">
+                    <div class="section-heading">
+                        <span class="section-index">06</span>
+                        <div>
+                            <p class="eyebrow">Reference</p>
+                            <h2>Error model</h2>
+                        </div>
                     </div>
-                </div>
 
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/download-fia-doc</code>
-                        <button class="btn"
-                            onclick="copyToClipboard('/download-fia-doc?url=')">Copy</button>
+                    <div class="error-list">
+                        <div><span>400</span><strong>Bad request</strong><p>Missing parameter, invalid document host, or
+                                malformed input.</p></div>
+                        <div><span>401</span><strong>Key required</strong><p>The <code>X-API-Key</code> header was not
+                                provided.</p></div>
+                        <div><span>403</span><strong>Key rejected</strong><p>The provided API key does not match the
+                                server value.</p></div>
+                        <div><span>404</span><strong>Asset not found</strong><p>No matching track image exists.</p></div>
+                        <div><span>500</span><strong>Upstream failure</strong><p>FIA navigation, parsing, or download
+                                failed.</p></div>
+                        <div><span>503</span><strong>Auth unavailable</strong><p><code>FIA_DOCS_API_KEY</code> is not
+                                configured on the server.</p></div>
+                    </div>
+                </section>
+
+                <section class="section-block" id="operational-notes">
+                    <div class="section-heading">
+                        <span class="section-index">07</span>
+                        <div>
+                            <p class="eyebrow">Runtime behavior</p>
+                            <h2>Operational notes</h2>
+                        </div>
                     </div>
 
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint acts as a proxy server for downloading FIA documents. It:</p>
-                    <ul>
-                        <li>Fetches the document from the provided FIA URL</li>
-                        <li>Streams the file content directly to your browser/client</li>
-                        <li>Sets appropriate headers for PDF file downloads</li>
-                        <li>Extracts filename from the URL for proper file naming</li>
-                        <li>Does not store files on the server (streaming download)</li>
-                    </ul>
-
-                    <h3>Required Parameters</h3>
-                    <table>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Type</th>
-                            <th>Required</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>url</code></td>
-                            <td>string</td>
-                            <td>✅ Yes</td>
-                            <td>Complete FIA document URL obtained from <code>/fia-documents</code> endpoint</td>
-                        </tr>
-                    </table>
-
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Download a specific document:</strong></p>
-                        <code>GET /download-fia-doc?url=https://www.fia.com/system/files/decision-document/2025_belgian_grand_prix_-_final_race_classification.pdf</code>
+                    <div class="notes-grid">
+                        <article>
+                            <h3>Upstream dependency</h3>
+                            <p>Discovery and document endpoints depend on the current FIA website structure and network
+                                availability.</p>
+                        </article>
+                        <article>
+                            <h3>Responsible usage</h3>
+                            <p>Cache stable results where appropriate and avoid unnecessary repeated scraping of the
+                                same event.</p>
+                        </article>
+                        <article>
+                            <h3>Season fallback</h3>
+                            <p>If the requested current season is unavailable, document retrieval falls back to the
+                                previous year.</p>
+                        </article>
+                        <article>
+                            <h3>Static documentation</h3>
+                            <p>This page is server-rendered HTML. It loads one local stylesheet and makes no API or
+                                third-party requests.</p>
+                        </article>
                     </div>
+                </section>
 
-                    <h3>Response</h3>
-                    <p><strong>Success (200):</strong> Direct PDF file download with these headers:</p>
-                    <ul>
-                        <li><code>Content-Type: application/pdf</code></li>
-                        <li><code>Content-Disposition: attachment; filename="document_name.pdf"</code></li>
-                    </ul>
-
-                    <div class="note-box">
-                        <h4>Usage Note</h4>
-                        <p>Always use URLs obtained from the <code>/fia-documents</code> endpoint. External URLs may not
-                            work and could cause errors.</p>
+                <footer>
+                    <div class="footer-mark" aria-hidden="true"><span></span><span></span><span></span></div>
+                    <div>
+                        <strong>{{ title }}</strong>
+                        <p>Independent developer API. Not affiliated with or endorsed by the FIA.</p>
                     </div>
-                </div>
-
-                <div class="endpoint">
-                    <div class="endpoint-header">
-                        <span class="method">GET</span>
-                        <code class="path">/track-image</code>
-                        <button class="btn"
-                            onclick="copyToClipboard('/track-image?track_name=Suzuka%20Circuit')">Copy</button>
-                    </div>
-
-                    <h3>What This Endpoint Does</h3>
-                    <p>This endpoint returns a circuit image in PNG format from the local <code>f1Tracks</code> assets
-                        directory.</p>
-                    <ul>
-                        <li>Accepts a track/circuit name via query parameter</li>
-                        <li>Matches file names in a case-insensitive way</li>
-                        <li>Normalizes separators (spaces, dashes, underscores) for flexible matching</li>
-                        <li>Streams the image with <code>Content-Type: image/png</code></li>
-                    </ul>
-
-                    <h3>Required Parameters</h3>
-                    <table>
-                        <tr>
-                            <th>Parameter</th>
-                            <th>Type</th>
-                            <th>Required</th>
-                            <th>Description</th>
-                        </tr>
-                        <tr>
-                            <td><code>track_name</code></td>
-                            <td>string</td>
-                            <td>✅ Yes</td>
-                            <td>Circuit name, e.g. <code>Suzuka Circuit</code></td>
-                        </tr>
-                    </table>
-
-                    <h3>Example Usage</h3>
-                    <div class="example-box">
-                        <p><strong>Get Suzuka PNG:</strong></p>
-                        <code>GET /track-image?track_name=Suzuka Circuit</code>
-                    </div>
-
-                    <h3>Response</h3>
-                    <p><strong>Success (200):</strong> Raw PNG image bytes with header:</p>
-                    <ul>
-                        <li><code>Content-Type: image/png</code></li>
-                    </ul>
-                </div>
-            </section>
-
-            <section>
-                <h2>Workflow Examples</h2>
-                <div class="info-box">
-                    <h3>Complete Workflow: Get Documents for Monaco 2024</h3>
-                    <ol>
-                        <li><strong>Discover available seasons:</strong>
-                            <code>GET /get-seasons-available</code>
-                        </li>
-                        <li><strong>Get Grand Prix events for 2024:</strong>
-                            <code>GET /get-gp-available?season=2024</code>
-                        </li>
-                        <li><strong>Retrieve documents for Monaco GP:</strong>
-                            <code>GET /fia-documents?season=SEASON 2024&event=Monaco Grand Prix</code>
-                        </li>
-                        <li><strong>Download a specific document:</strong>
-                            <code>GET /download-fia-doc?url={document_url}</code>
-                        </li>
-                    </ol>
-                </div>
-
-                <div class="info-box">
-                    <h3>Quick Workflow: Get Latest Documents</h3>
-                    <ol>
-                        <li><strong>Get current season documents:</strong>
-                            <code>GET /fia-documents</code>
-                        </li>
-                        <li><strong>Download any document:</strong>
-                            <code>GET /download-fia-doc?url={document_url}</code>
-                        </li>
-                    </ol>
-                </div>
-            </section>
-
-            <section>
-                <h2>Document Types You Can Retrieve</h2>
-                <div class="info-box">
-                    <p>The API can retrieve various types of official FIA documents:</p>
-                    <ul>
-                        <li><strong>Race Results:</strong> Final classifications, fastest laps, lap charts</li>
-                        <li><strong>Qualifying Results:</strong> Qualifying classifications and session reports</li>
-                        <li><strong>Practice Results:</strong> Free practice session timings and reports</li>
-                        <li><strong>Stewards' Decisions:</strong> Penalties, investigations, and official rulings</li>
-                        <li><strong>Technical Documents:</strong> Scrutineering reports, technical regulations updates
-                        </li>
-                        <li><strong>Administrative:</strong> Entry lists, schedule changes, official notices</li>
-                    </ul>
-                </div>
-            </section>
-
-            <section>
-                <h2>Error Handling</h2>
-                <table>
-                    <tr>
-                        <th>HTTP Code</th>
-                        <th>Error</th>
-                        <th>Description</th>
-                        <th>Solution</th>
-                    </tr>
-                    <tr>
-                        <td>400</td>
-                        <td>Bad Request</td>
-                        <td>Missing required <code>url</code> parameter for download endpoint</td>
-                        <td>Provide a valid URL parameter</td>
-                    </tr>
-                    <tr>
-                        <td>400</td>
-                        <td>Bad Request</td>
-                        <td>Missing required <code>track_name</code> parameter for <code>/track-image</code> endpoint</td>
-                        <td>Provide a valid circuit name in <code>track_name</code></td>
-                    </tr>
-                    <tr>
-                        <td>404</td>
-                        <td>Not Found</td>
-                        <td>Track image not found in <code>f1Tracks</code> or assets folder missing</td>
-                        <td>Check the exact circuit name and ensure the PNG exists in <code>f1Tracks</code></td>
-                    </tr>
-                    <tr>
-                        <td>500</td>
-                        <td>Internal Server Error</td>
-                        <td>Web scraping failed, network issues, or FIA site unavailable</td>
-                        <td>Retry after a few minutes. Check if FIA website is accessible</td>
-                    </tr>
-                    <tr>
-                        <td>500</td>
-                        <td>Download Failed</td>
-                        <td>Unable to fetch document from provided URL</td>
-                        <td>Verify the URL is valid and the document still exists</td>
-                    </tr>
-                    <tr>
-                        <td>500</td>
-                        <td>Selection Timeout</td>
-                        <td>Season/event selection failed due to website changes or network issues</td>
-                        <td>Try with a different season or retry the request</td>
-                    </tr>
-                </table>
-            </section>
-
-            <section>
-                <h2>Technical Notes</h2>
-                <div class="note-box">
-                    <h3>Rate Limiting & Performance</h3>
-                    <ul>
-                        <li>No built-in rate limiting, but be respectful of the FIA website</li>
-                        <li>Web scraping requests take 3-8 seconds due to browser automation</li>
-                        <li>Downloads are immediate once the document URL is known</li>
-                        <li>Consider caching results if making frequent requests</li>
-                        <li>Discovery endpoints are faster than document retrieval endpoints</li>
-                    </ul>
-
-                    <h3>Data Processing</h3>
-                    <ul>
-                        <li><strong>Date Conversion:</strong> FIA format "27.07.25 19:58 CET" → ISO
-                            "2025-07-27T19:58:00"</li>
-                        <li><strong>URL Processing:</strong> Relative paths are converted to absolute URLs</li>
-                        <li><strong>Season Normalization:</strong> "2024" → "SEASON 2024" automatic conversion</li>
-                        <li><strong>Browser Automation:</strong> Uses Playwright with Chromium for reliable scraping
-                        </li>
-                        <li><strong>No Data Storage:</strong> All operations are performed in real-time</li>
-                    </ul>
-
-                    <h3>Dependencies</h3>
-                    <ul>
-                        <li>Requires stable internet connection to FIA website</li>
-                        <li>Dependent on FIA website structure (may break if they change their HTML)</li>
-                        <li>Uses headless Chromium browser for JavaScript-heavy FIA site</li>
-                        <li>Automatic retry logic for network issues</li>
-                    </ul>
-                </div>
-            </section>
-        </main>
-
-        <footer>
-            <p>{{ title }} - Built with Flask and Playwright</p>
-        </footer>
+                    <span>v{{ version }}</span>
+                </footer>
+            </main>
+        </div>
     </div>
-
-    <div id="toast" class="toast">Copied to clipboard!</div>
-
-    <script>
-        function copyToClipboard(text) {
-            navigator.clipboard.writeText(text).then(() => {
-                showToast();
-            }).catch(err => {
-                console.error('Copy failed:', err);
-            });
-        }
-
-        function showToast() {
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
-        }
-
-    </script>
 </body>
 
 </html>
