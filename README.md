@@ -2,6 +2,8 @@
 
 A Flask-based REST API that scrapes and provides access to official FIA Formula 1 documents from the FIA website. Get race classifications, stewards' decisions, technical documents, and more in a structured JSON format.
 
+See the [changelog](CHANGELOG.md) for release history and notable changes.
+
 ## 🏎️ Features
 
 - **Real-time Web Scraping**: Automated extraction from the official FIA documents portal
